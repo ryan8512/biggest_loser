@@ -3,6 +3,10 @@ const cors = require('cors');
 const path = require('path');
 const app = express();
 const PORT = 3000;
+const { connectDb, getDb } = require('./db'); // Import MongoDB connection functions
+
+// Connect to MongoDB before handling any requests
+connectDb();
 
 // Use cors middleware to allow cross-origin requests
 //app.use(cors()); // Allow all origins to access your API
@@ -37,7 +41,7 @@ app.post('/check-username', (req, res) => {
                 <label for="date">Date</label>
                 <input type="date" id="date" name="date" required> <br/>
                 <label for="weight">Weight (kg)</label>
-                <input type="number" id="weight" name="weight" required> <br/>
+                <input type="number" id="weight" name="weight" step="0.05" required> <br/>
                 <label for="fat_pctg">Fat Percentage (%)</label>
                 <input type="number" id="fat_pctg" name="fat_pctg" step="0.01" required> <br/>
                 <input type="submit" value="Submit">
@@ -50,19 +54,10 @@ app.post('/check-username', (req, res) => {
           <a href="/">Go back to the first form</a>
         `);
       }
-    // Return a JSON response
-    // res.json({
-    //     success: true,
-    //     username: username,
-    //     exists: exists,
-    //     message: exists
-    //         ? 'Username is already taken.'
-    //         : 'Username is available.',
-    // });
 });
 
 // Process the second form
-app.post('/check-weight', (req, res) => {
+app.post('/check-weight', async (req, res) => {
     const {date, weight, fat_pctg} = req.body;
 
     // Validate the incoming data
@@ -70,19 +65,26 @@ app.post('/check-weight', (req, res) => {
         return res.status(400).json({ message: 'All fields are required' });
     }
   
-    // Validate the email address
-    if (1) {
-        res.json({
-                success: true,
-                date: date,
-                weight: weight,
-                fat_pctg: fat_pctg
-            });
-    } else {
-      res.send(`
-        <p style="color: red;">Please enter a valid email address.</p>
-        <a href="/process">Go back to the second form</a>
-      `);
+    // New Code for MongoDB
+    try {
+        // Get MongoDB database instance
+        const db = getDb();
+        
+        // Access the 'weights' collection (it will be created automatically if it doesn't exist)
+        const collection = db.collection('weights');
+        
+        // Insert the form data into the collection
+        const result = await collection.insertOne({ date, weight, fat_pctg });
+        
+        // Send a success response
+        res.status(201).json({
+            success: true,
+            message: 'Data saved successfully',
+            dataId: result.insertedId,
+        });
+    } catch (error) {
+        console.error('Error saving data to MongoDB:', error);
+        res.status(500).json({ message: 'Internal Server Error' });
     }
 });
 
