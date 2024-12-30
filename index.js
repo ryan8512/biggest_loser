@@ -48,11 +48,11 @@ app.post('/check-username', (req, res) => {
             </form>
         `);
     }else {
-        // If the username is invalid, show an error
-        res.send(`
-          <p style="color: red;">Please enter a valid username.</p>
-          <a href="/">Go back to the first form</a>
-        `);
+        // Send a JSON response to indicate an invalid username
+        res.status(400).json({
+            success: false,
+            message: 'Invalid username. Please enter a valid username.',
+        });
       }
 });
 
@@ -86,6 +86,11 @@ app.post('/check-weight', async (req, res) => {
         console.error('Error saving data to MongoDB:', error);
         res.status(500).json({ message: 'Internal Server Error' });
     }
+});
+
+//Get Data from Database
+app.get('/get-leaderboard',async (req, res) => {
+
 });
 
 // Catch-all route to serve front-end for all other routes (important for SPAs)

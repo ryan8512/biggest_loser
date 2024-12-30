@@ -9,6 +9,9 @@ document.getElementById('usernameForm').addEventListener('submit', function(even
         return;
     }
 
+    //Reset the output message
+    document.getElementById('message').textContent = "";
+
     // Call the API to check if the username exists
     checkUsernameExistence(username);
 });
@@ -26,6 +29,23 @@ document.getElementById('formContainer').addEventListener('submit', function(eve
     }
 });
 
+document.getElementById("leaderboard").addEventListener('click', async (event) => {
+    try{
+        const response = await fetch('/get-leaderboard'); // Send a GET request to the endpoint
+        if (response.ok) {
+            const data = await response.json();
+            document.getElementById('result').innerHTML = `
+                <pre>${JSON.stringify(data, null, 2)}</pre>
+            `;
+        } else {
+            document.getElementById('result').innerHTML = 'Error fetching data';
+        }
+    }catch(error){
+        console.error('Fetch error:', error);
+        document.getElementById('result').innerHTML = 'Fetch error occurred';
+    }
+});
+
 function checkUsernameExistence(username) {
     // Example API endpoint (you would replace this with your actual API endpoint)
     const apiEndpoint = `http://localhost:3000/check-username`;
@@ -37,16 +57,20 @@ function checkUsernameExistence(username) {
         },
         body: JSON.stringify({username})
     })
-    .then(response => response.text()) // Parse the response as JSON
-    .then(data => {
-        // document.getElementById('message').textContent = data.message;
-        // Hide the first form
-        usernameForm.style.display = 'none';
-        document.getElementById('formContainer').innerHTML = data;
+    .then(async (response) => {
+        if(response.ok){
+            const html = await response.text();
+            usernameForm.style.display = 'none'; // Hide the first form
+            document.getElementById('formContainer').innerHTML = html;
+            home_button.style.display = 'block'; //Enable the home button
+        }
+        else{
+            const error = await response.json();
+            document.getElementById('message').textContent = error.message;
+        }
     })
     .catch(error => {
-        console.error('Error submitting the form:', error);
-        formContainer.innerHTML = `<p style="color: red;">${error.message}</p>`;
+        document.getElementById('message').textContent = error;
     });
 }
 
@@ -63,6 +87,8 @@ function weightEntry(date,weight,fat_pctg) {
     })
     .then(response => response.json()) // Parse the response as JSON
     .then(data => {
+        formContainer.style.display = 'none'; // Hide the first form
+        home_button.style.display = 'block'; //Enable the home button
         document.getElementById('message').textContent = data.message;
     })
     .catch(error => {
