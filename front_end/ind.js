@@ -1,7 +1,9 @@
+let username = "";
+
 document.getElementById('usernameForm').addEventListener('submit', function(event) {
     event.preventDefault(); // Prevent the form from submitting normally
 
-    const username = document.getElementById('username').value.trim();
+    username = document.getElementById('username').value.trim();
 
     // Simple validation to check if username is empty
     if (!username) {
@@ -10,7 +12,7 @@ document.getElementById('usernameForm').addEventListener('submit', function(even
     }
 
     //Reset the output message
-    document.getElementById('message').textContent = "";
+    reset_display();
 
     // Call the API to check if the username exists
     checkUsernameExistence(username);
@@ -25,26 +27,73 @@ document.getElementById('formContainer').addEventListener('submit', function(eve
         const fat_pctg = document.getElementById('fat_pctg').value.trim();
 
         // Call the API to check if the username exists
-        weightEntry(date,weight,fat_pctg);
+        weightEntry(username,date,weight,fat_pctg);
     }
 });
 
 document.getElementById("leaderboard").addEventListener('click', async (event) => {
-    try{
+    try {
+        reset_display();
         const response = await fetch('/get-leaderboard'); // Send a GET request to the endpoint
         if (response.ok) {
             const data = await response.json();
-            document.getElementById('result').innerHTML = `
-                <pre>${JSON.stringify(data, null, 2)}</pre>
-            `;
+
+            // Create a table dynamically
+            const table = document.createElement('table');
+            table.border = "1"; // Add a border for better visibility
+
+            // Add table headers (assuming the first object's keys are representative)
+            const headers = Object.keys(data[0]);
+            const thead = document.createElement('thead');
+            const headerRow = document.createElement('tr');
+            headers.forEach(header => {
+                const th = document.createElement('th');
+                th.textContent = header; // Set the column name
+                headerRow.appendChild(th);
+            });
+            thead.appendChild(headerRow);
+            table.appendChild(thead);
+
+            // Add table rows
+            const tbody = document.createElement('tbody');
+            data.forEach(row => {
+                const tr = document.createElement('tr');
+                headers.forEach(header => {
+                    const td = document.createElement('td');
+                    td.textContent = row[header]; // Fill cell with corresponding data
+                    tr.appendChild(td);
+                });
+                tbody.appendChild(tr);
+            });
+            table.appendChild(tbody);
+
+            // Display the table in the result div
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = ''; // Clear previous content
+            resultDiv.appendChild(table);
         } else {
             document.getElementById('result').innerHTML = 'Error fetching data';
         }
-    }catch(error){
+    } catch (error) {
         console.error('Fetch error:', error);
         document.getElementById('result').innerHTML = 'Fetch error occurred';
     }
 });
+    // try{
+    //     const response = await fetch('/get-leaderboard'); // Send a GET request to the endpoint
+    //     if (response.ok) {
+    //         const data = await response.json();
+    //         document.getElementById('result').innerHTML = `
+    //             <pre>${JSON.stringify(data, null, 2)}</pre>
+    //         `;
+    //     } else {
+    //         document.getElementById('result').innerHTML = 'Error fetching data';
+    //     }
+    // }catch(error){
+    //     console.error('Fetch error:', error);
+    //     document.getElementById('result').innerHTML = 'Fetch error occurred';
+    // }
+    // });
 
 function checkUsernameExistence(username) {
     // Example API endpoint (you would replace this with your actual API endpoint)
@@ -74,7 +123,7 @@ function checkUsernameExistence(username) {
     });
 }
 
-function weightEntry(date,weight,fat_pctg) {
+function weightEntry(username,date,weight,fat_pctg) {
     // Example API endpoint (you would replace this with your actual API endpoint)
     const apiEndpoint2 = `http://localhost:3000/check-weight`;
 
@@ -83,7 +132,7 @@ function weightEntry(date,weight,fat_pctg) {
         headers: {
             'Content-Type': 'application/json'
         },
-        body: JSON.stringify({date,weight,fat_pctg})
+        body: JSON.stringify({username,date,weight,fat_pctg})
     })
     .then(response => response.json()) // Parse the response as JSON
     .then(data => {
@@ -95,4 +144,9 @@ function weightEntry(date,weight,fat_pctg) {
         console.error('Error submitting the form:', error);
         formContainer.innerHTML = `<p style="color: red;">${error.message}</p>`;
     });
+}
+
+function reset_display(){
+    document.getElementById('message').textContent = "";
+    document.getElementById('result').innerHTML = ''; // Clear previous content
 }

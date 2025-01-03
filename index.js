@@ -1,6 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
+const moment = require('moment')
 const app = express();
 const PORT = 3000;
 const { connectDb, getDb } = require('./db'); // Import MongoDB connection functions
@@ -58,7 +59,7 @@ app.post('/check-username', (req, res) => {
 
 // Process the second form
 app.post('/check-weight', async (req, res) => {
-    const {date, weight, fat_pctg} = req.body;
+    const {date, weight, fat_pctg, username} = req.body;
 
     // Validate the incoming data
     if (!date || !weight || !fat_pctg) {
@@ -67,14 +68,19 @@ app.post('/check-weight', async (req, res) => {
   
     // New Code for MongoDB
     try {
+        // Convert the date string to Moment.js format
+        const formattedDate = moment(date, 'YYYY-MM-DD').startOf('week').toDate();  // Format date into a JavaScript Date object
+
         // Get MongoDB database instance
         const db = getDb();
         
         // Access the 'weights' collection (it will be created automatically if it doesn't exist)
         const collection = db.collection('weights');
+
+        const fat_mass = weight * (fat_pctg / 100);
         
         // Insert the form data into the collection
-        const result = await collection.insertOne({ date, weight, fat_pctg });
+        const result = await collection.insertOne({username,date: formattedDate, weight, fat_pctg, fat_mass});
         
         // Send a success response
         res.status(201).json({
@@ -90,7 +96,44 @@ app.post('/check-weight', async (req, res) => {
 
 //Get Data from Database
 app.get('/get-leaderboard',async (req, res) => {
+    try {
+        // Get MongoDB database instance
+        const db = getDb();
 
+        //Get the 'table weights
+        const collection = db.collection('weights');
+
+        //Get the current date and last week's date
+        const currentDate = moment();
+        const lastWeekDate = moment().subtract(1, 'weeks');
+        
+        //Retrieve user's data for both the current week and last week
+        const currentWeekData = await collection.find({ date: currentDate.startOf('week').toDate() }).toArray();
+        const lastWeekData = await collection.find({ date: lastWeekDate.startOf('week').toDate() }).toArray();
+        // const data = await collection.find({}).toArray(); // Fetch all data
+
+        // Calculate fat loss percentage for each user and store in an array
+        const leaderboard = currentWeekData.map(userThisWeek => {
+            const userLastWeek = lastWeekData.find(user => user.username.toString() === userThisWeek.username.toString());
+            
+            console.log(userLastWeek);
+            
+            if (userLastWeek) {
+            const fatLossPercentage = ((userLastWeek.fat_mass - userThisWeek.fat_mass) / userLastWeek.fat_mass) * 100;
+            return { name: userThisWeek.username, fatLossPercentage };
+            }
+
+            return null;
+        }).filter(entry => entry !== null);
+
+        // Sort by fat loss percentage in descending order
+        const rankedData = leaderboard.sort((a, b) => b.fatLossPercentage - a.fatLossPercentage);
+
+        res.json(rankedData); // Send the data as JSON response
+    } catch (err) {
+        console.error('Error fetching data:', err);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
 });
 
 // Catch-all route to serve front-end for all other routes (important for SPAs)
