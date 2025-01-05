@@ -2,10 +2,43 @@ const chai = require('chai');
 const chaiHttp = require('chai-http');
 const app = require('../back_end/index'); // Adjust the path as needed
 const expect = chai.expect;
+const { connectDb, getDb, closeDb} = require('../back_end/db'); // Import MongoDB connection functions
+const moment = require('moment');
 
 chai.use(chaiHttp);
 
+let server;
+let db;
+
 describe('API Tests', () => {
+
+  // Start the server before the tests
+  before((done) => {
+    server = app.listen(3000, () => {
+        console.log('Test server is running on http://localhost:3000');
+        done();
+    });
+  });
+
+  // Connect to MongoDB before the tests
+  before(async () => {
+    await connectDb();
+    db = getDb();
+  });
+
+  // Stop the server and close MongoDB connection after the tests
+  after(async () => {
+    if (db) {
+      await closeDb(); // Close the MongoDB client connection
+    }
+
+    if (server) {
+      server.close(() => {
+        console.log('Test server stopped');
+      });
+    }
+  });
+
   
   // Test the /check-username route
   describe('POST /check-username', () => {
@@ -81,6 +114,24 @@ describe('API Tests', () => {
 
   // Test the /get-leaderboard route
   describe('GET /get-leaderboard', () => {
+
+    // Run before each test to set up test data
+  beforeEach(async () => {
+    const collection = db.collection('weights');
+    await collection.deleteMany({}); // Clear the collection
+
+    // Populate test data for the first test
+    await collection.insertMany([
+      { username: 'user1', fat_mass: 20, date: new Date(moment().startOf('week').toDate()) },
+      { username: 'user2', fat_mass: 25, date: new Date(moment().subtract(1, 'weeks').startOf('week').toDate()) },
+    ]);
+  });
+
+  // Run after each test to clean up the database
+  afterEach(async () => {
+    const collection = db.collection('weights');
+    await collection.deleteMany({}); // Ensure collection is empty after each test
+  });
 
     it('should return a leaderboard', (done) => {
       chai.request(app)

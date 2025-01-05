@@ -1,16 +1,14 @@
 const { MongoClient } = require('mongodb');
 require('dotenv').config(); // Load environment variables
 
+let client = null; // Store the MongoDB client instance here
 let db = null; // Store the database connection here
 
 const connectDb = async () => {
     try {
         // MongoDB URI from .env file
         const uri = process.env.MONGO_URI;
-        const client = new MongoClient(uri, {
-            useNewUrlParser: true,
-            useUnifiedTopology: true
-        });
+        client = new MongoClient(uri);
 
         // Connect to MongoDB and store the database instance
         await client.connect();
@@ -31,4 +29,16 @@ const getDb = () => {
     return db;
 };
 
-module.exports = { connectDb, getDb };
+// Function to close the database connection
+const closeDb = async () => {
+    try {
+        if (client) {
+            await client.close(); // Close the MongoDB client connection
+            console.log('MongoDB client closed');
+        }
+    } catch (error) {
+        console.error('Error closing MongoDB connection:', error);
+    }
+};
+
+module.exports = { connectDb, getDb, closeDb };

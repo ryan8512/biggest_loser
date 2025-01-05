@@ -7,7 +7,7 @@ const PORT = 3000;
 const { connectDb, getDb } = require('./db'); // Import MongoDB connection functions
 
 // Connect to MongoDB before handling any requests
-connectDb();
+//connectDb();
 
 // Use cors middleware to allow cross-origin requests
 //app.use(cors()); // Allow all origins to access your API
@@ -111,6 +111,11 @@ app.get('/get-leaderboard',async (req, res) => {
         const currentWeekData = await collection.find({ date: currentDate.startOf('week').toDate() }).toArray();
         const lastWeekData = await collection.find({ date: lastWeekDate.startOf('week').toDate() }).toArray();
 
+        // Early return if there's no data
+        if (currentWeekData.length === 0 || lastWeekData.length === 0) {
+            return res.json([]); // Return an empty array
+        }
+
         //Group the username
         const groupAndAverage = (data) => {
             const grouped = data.reduce((acc, user) => {
@@ -160,8 +165,8 @@ app.get('*', (req, res) => {
 });
 
 // Start the server and export the server instance
-const server = app.listen(PORT, () => {
-    console.log(`Server is running on http://localhost:${PORT}`);
-});
+// const server = app.listen(PORT, () => {
+//     console.log(`Server is running on http://localhost:${PORT}`);
+// });
 
-module.exports = server; // Export server instance for use in tests
+module.exports = app; // Export server instance for use in tests

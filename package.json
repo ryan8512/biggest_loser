@@ -12,7 +12,8 @@
     "mocha": "^11.0.1"
   },
   "scripts": {
-    "test": "mocha test --timeout 5000"
+    "test": "mocha test --timeout 5000",
+    "main": "node ./back_end/run_index.js"
   },
   "main": "./back_end/index.js"
 }
