@@ -16,7 +16,7 @@ connectDb();
 app.use(express.json());
 
 // Serve static front-end files
-app.use(express.static(path.join(__dirname, 'front_end')));
+app.use(express.static(path.join(__dirname, '../front_end')));
 
 // Simulated database of usernames
 const usernames = ['johndoe', 'janedoe', 'admin', 'testuser'];
@@ -99,7 +99,7 @@ app.get('/get-leaderboard',async (req, res) => {
     try {
         // Get MongoDB database instance
         const db = getDb();
-
+        
         //Get the 'table weights
         const collection = db.collection('weights');
 
@@ -110,17 +110,35 @@ app.get('/get-leaderboard',async (req, res) => {
         //Retrieve user's data for both the current week and last week
         const currentWeekData = await collection.find({ date: currentDate.startOf('week').toDate() }).toArray();
         const lastWeekData = await collection.find({ date: lastWeekDate.startOf('week').toDate() }).toArray();
-        // const data = await collection.find({}).toArray(); // Fetch all data
 
-        // Calculate fat loss percentage for each user and store in an array
-        const leaderboard = currentWeekData.map(userThisWeek => {
-            const userLastWeek = lastWeekData.find(user => user.username.toString() === userThisWeek.username.toString());
-            
-            console.log(userLastWeek);
-            
+        //Group the username
+        const groupAndAverage = (data) => {
+            const grouped = data.reduce((acc, user) => {
+                if (!acc[user.username]) {
+                    acc[user.username] = { totalFatMass: 0, count: 0 };
+                }
+                acc[user.username].totalFatMass += user.fat_mass;
+                acc[user.username].count += 1;
+                return acc;
+            }, {});
+        
+            return Object.entries(grouped).map(([username, { totalFatMass, count }]) => ({
+                username,
+                avgFatMass: totalFatMass / count,
+            }));
+        };
+
+        // Process current and last week's data
+        const avgCurrentWeekData = groupAndAverage(currentWeekData);
+        const avgLastWeekData = groupAndAverage(lastWeekData);
+
+        // Calculate fat loss percentage for each user (Sure that this is a single entry already)
+        const leaderboard = avgCurrentWeekData.map(userThisWeek => {
+            const userLastWeek = avgLastWeekData.find(user => user.username === userThisWeek.username);
+
             if (userLastWeek) {
-            const fatLossPercentage = ((userLastWeek.fat_mass - userThisWeek.fat_mass) / userLastWeek.fat_mass) * 100;
-            return { name: userThisWeek.username, fatLossPercentage };
+                const fatLossPercentage = ((userLastWeek.avgFatMass - userThisWeek.avgFatMass) / userLastWeek.avgFatMass) * 100;
+                return { name: userThisWeek.username, fatLossPercentage };
             }
 
             return null;
@@ -138,7 +156,7 @@ app.get('/get-leaderboard',async (req, res) => {
 
 // Catch-all route to serve front-end for all other routes (important for SPAs)
 app.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname, 'front_end', 'index.html'));
+    res.sendFile(path.join(__dirname, '../front_end', 'index.html'));
 });
 
 // Start the server
