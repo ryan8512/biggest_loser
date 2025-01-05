@@ -5,5 +5,14 @@
     "express": "^4.21.2",
     "moment": "^2.30.1",
     "mongodb": "^6.12.0"
-  }
+  },
+  "devDependencies": {
+    "chai": "^4.2.0",
+    "chai-http": "^4.3.0",
+    "mocha": "^11.0.1"
+  },
+  "scripts": {
+    "test": "mocha test --timeout 5000"
+  },
+  "main": "./back_end/index.js"
 }

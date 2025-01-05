@@ -1,7 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
-const moment = require('moment')
+const moment = require('moment');
 const app = express();
 const PORT = 3000;
 const { connectDb, getDb } = require('./db'); // Import MongoDB connection functions
@@ -54,18 +54,18 @@ app.post('/check-username', (req, res) => {
             success: false,
             message: 'Invalid username. Please enter a valid username.',
         });
-      }
+    }
 });
 
 // Process the second form
 app.post('/check-weight', async (req, res) => {
-    const {date, weight, fat_pctg, username} = req.body;
+    const { date, weight, fat_pctg, username } = req.body;
 
     // Validate the incoming data
     if (!date || !weight || !fat_pctg) {
         return res.status(400).json({ message: 'All fields are required' });
     }
-  
+
     // New Code for MongoDB
     try {
         // Convert the date string to Moment.js format
@@ -73,15 +73,15 @@ app.post('/check-weight', async (req, res) => {
 
         // Get MongoDB database instance
         const db = getDb();
-        
+
         // Access the 'weights' collection (it will be created automatically if it doesn't exist)
         const collection = db.collection('weights');
 
         const fat_mass = weight * (fat_pctg / 100);
-        
+
         // Insert the form data into the collection
-        const result = await collection.insertOne({username,date: formattedDate, weight, fat_pctg, fat_mass});
-        
+        const result = await collection.insertOne({ username, date: formattedDate, weight, fat_pctg, fat_mass });
+
         // Send a success response
         res.status(201).json({
             success: true,
@@ -121,7 +121,7 @@ app.get('/get-leaderboard',async (req, res) => {
                 acc[user.username].count += 1;
                 return acc;
             }, {});
-        
+
             return Object.entries(grouped).map(([username, { totalFatMass, count }]) => ({
                 username,
                 avgFatMass: totalFatMass / count,
@@ -159,7 +159,9 @@ app.get('*', (req, res) => {
     res.sendFile(path.join(__dirname, '../front_end', 'index.html'));
 });
 
-// Start the server
-app.listen(PORT, () => {
+// Start the server and export the server instance
+const server = app.listen(PORT, () => {
     console.log(`Server is running on http://localhost:${PORT}`);
 });
+
+module.exports = server; // Export server instance for use in tests
