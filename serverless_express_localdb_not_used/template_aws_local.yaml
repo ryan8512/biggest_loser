@@ -1,0 +1,37 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Resources:
+  ApiHandler:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: back_end/index_aws_local.handler
+      Runtime: nodejs22.x
+      Timeout: 60 
+      MemorySize: 128
+      Events:
+        CheckUsername:
+          Type: Api
+          Properties:
+            Path: /check-username
+            Method: post
+        CheckWeight:
+          Type: Api
+          Properties:
+            Path: /check-weight
+            Method: post
+        GetLeaderboard:
+          Type: Api
+          Properties:
+            Path: /get-leaderboard
+            Method: get
+        Root:
+          CatchAll:
+          Type: Api
+          Properties:
+            Path: /
+            Method: any
+        CatchAll:
+          Type: Api
+          Properties:
+            Path: /{proxy+}
+            Method: any

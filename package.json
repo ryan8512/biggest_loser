@@ -1,5 +1,10 @@
 {
+  "name": "biggest-loser-app",
+  "version": "1.0.0",
+  "description": "AWS Lambda + Express app for the Biggest Loser project",
   "dependencies": {
+    "aws-sdk": "^2.1692.0",
+    "aws-serverless-express": "^3.4.0",
     "cors": "^2.8.5",
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
@@ -13,7 +18,9 @@
   },
   "scripts": {
     "test": "mocha test --timeout 5000",
-    "main": "node ./back_end/run_index.js"
+    "main": "node ./back_end/run_index.js",
+    "build": "sam build",
+    "start": "sam local start-api"
   },
-  "main": "./back_end/index.js"
+  "main": "./back_end/index_aws.js"
 }

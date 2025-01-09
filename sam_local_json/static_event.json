@@ -1,0 +1,10 @@
+{
+  "httpMethod": "GET",
+  "path": "/static-file-path",
+  "headers": {
+    "Content-Type": "text/html"
+  },
+  "requestContext": {
+    "requestId": "test-request-id"
+  }
+}

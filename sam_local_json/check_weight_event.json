@@ -1,0 +1,11 @@
+{
+  "httpMethod": "POST",
+  "path": "/check-weight",
+  "body": "{\"username\": \"johndoe\", \"date\": \"2024-12-28\", \"weight\": \"80\", \"fat_pctg\": \"20\"}",
+  "headers": {
+    "Content-Type": "application/json"
+  },
+  "requestContext": {
+    "requestId": "test-request-id"
+  }
+}
