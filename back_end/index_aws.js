@@ -5,83 +5,60 @@ const AWS = require('aws-sdk');
 
 const isLocal = process.env.AWS_SAM_LOCAL === 'true';
 
+let dynamoDb = null;
+let dynamoDbService = null;
+console.log(isLocal);
+
 if(isLocal){
-    const dynamoDb = new AWS.DynamoDB.DocumentClient({
+    dynamoDb = new AWS.DynamoDB.DocumentClient({
         region: 'us-west-2',
         endpoint: 'http://host.docker.internal:8000/',   //'http://host.docker.internal:8000/'  http://192.168.1.21:8000/
     });
-    const dynamoDbService = new AWS.DynamoDB({
+    dynamoDbService = new AWS.DynamoDB({
         region: 'us-west-2',
         endpoint: 'http://host.docker.internal:8000/', 
     });
+}else{
+    dynamoDb = new AWS.DynamoDB.DocumentClient();
+}
 
-    // Function to create the "Weights" table if it doesn't exist
-    async function createTable() {
-        const params = {
-            TableName: 'Weights',
-            AttributeDefinitions: [
-                { AttributeName: 'username', AttributeType: 'S' },
-                { AttributeName: 'date', AttributeType: 'S' }
-            ],
-            KeySchema: [
-                { AttributeName: 'username', KeyType: 'HASH' },
-                { AttributeName: 'date', KeyType: 'RANGE' }
-            ],
-            ProvisionedThroughput: {
-                ReadCapacityUnits: 5,
-                WriteCapacityUnits: 5
-            }
-        };
+// Function to create the "Weights" table if it doesn't exist
+async function createTable() {
+    if(!isLocal) return;
+    const params = {
+        TableName: 'Weights',
+        AttributeDefinitions: [
+            { AttributeName: 'username', AttributeType: 'S' },
+            { AttributeName: 'date', AttributeType: 'S' }
+        ],
+        KeySchema: [
+            { AttributeName: 'username', KeyType: 'HASH' },
+            { AttributeName: 'date', KeyType: 'RANGE' }
+        ],
+        ProvisionedThroughput: {
+            ReadCapacityUnits: 5,
+            WriteCapacityUnits: 5
+        }
+    };
 
-        try {
-            // Use DynamoDB service to create the table (not DocumentClient)
-            const data = await dynamoDbService.createTable(params).promise();
-            console.log("Table created successfully:", JSON.stringify(data, null, 2));
-        } catch (err) {
-            if (err.code === 'ResourceInUseException') {
-                console.log("Table already exists, skipping creation.");
-            } else {
-                console.error("Error creating table:", JSON.stringify(err, null, 2));
-            }
+    try {
+        // Use DynamoDB service to create the table (not DocumentClient)
+        const data = await dynamoDbService.createTable(params).promise();
+        console.log("Table created successfully:", JSON.stringify(data, null, 2));
+    } catch (err) {
+        if (err.code === 'ResourceInUseException') {
+            console.log("Table already exists, skipping creation.");
+        } else {
+            console.error("Error creating table:", JSON.stringify(err, null, 2));
         }
     }
 }
-
-// exports.handler = async (event) => {
-//     // First, ensure the table exists (if it doesn't already)
-//     await createTable();
-
-//     const params = {
-//         TableName: 'Weights',
-//         Item: {
-//             username: 'exampleUser',  // Example partition key
-//             date: '2025-01-08',        // Example sort key
-//             weight: 75,                // Additional data you want to store
-//             fatPercentage: 20,         // Example data
-//             fatMass: 15                // Example data
-//         }
-//     };
-
-//     try {
-//         const result = await dynamoDb.put(params).promise();
-//         console.log(result);
-//         return {
-//             statusCode: 200,
-//             body: JSON.stringify({ message: 'Item successfully inserted/updated.' }),
-//         };
-//     } catch (err) {
-//         console.error('Error inserting item:', err);
-//         return {
-//             statusCode: 500,
-//             body: JSON.stringify({ error: 'Unable to insert item.' }),
-//         };
-//     }
-// };
 
 exports.handler = async (event) => {
     if(isLocal){
         await createTable();
     }
+
     const { httpMethod, path } = event;
 
     try {
