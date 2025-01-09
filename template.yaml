@@ -25,7 +25,6 @@ Resources:
             Path: /get-leaderboard
             Method: get
         Root:
-          CatchAll:
           Type: Api
           Properties:
             Path: /

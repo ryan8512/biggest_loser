@@ -7,6 +7,8 @@ const isLocal = process.env.AWS_SAM_LOCAL === 'true';
 
 let dynamoDb = null;
 let dynamoDbService = null;
+const fs = require('fs');;
+const path_lib = require('path');
 console.log(isLocal);
 
 if(isLocal){
@@ -59,9 +61,21 @@ exports.handler = async (event) => {
         await createTable();
     }
 
-    const { httpMethod, path } = event;
+    const { httpMethod, path  } = event;
 
     try {
+        // Serve `index.html` for the root path
+        if (path === '/' || path === '/index.html') {
+            const filePath = path_lib.join(__dirname, '../front_end/index.html');
+            return serveFile(filePath, 'text/html');
+        }
+
+        // Serve `ind.js` for JavaScript requests
+        if (path === '/ind.js') {
+            const filePath = path_lib.join(__dirname, '../front_end/ind.js');
+            return serveFile(filePath, 'application/javascript');
+        }
+
         if (httpMethod === 'POST' && path === '/check-username') {
             return await checkUsername(event);
         }
@@ -75,8 +89,9 @@ exports.handler = async (event) => {
         }
 
         if (httpMethod === 'GET') {
-            // Serve static files
-            return serveStaticFiles(event);
+             // Serve static files
+             const filePath = path_lib.join(__dirname, '../front_end/index.html');
+            return serveFile(filePath, 'text/html');
         }
 
         return {
@@ -185,7 +200,10 @@ const getLeaderboard = async () => {
 
         const paramsCurrent = {
             TableName: 'Weights',
-            FilterExpression: 'date >= :currentStartOfWeek',
+            FilterExpression: '#date >= :currentStartOfWeek',
+            ExpressionAttributeNames: {
+                '#date': 'date',  // Map #date to the reserved word 'date'
+            },
             ExpressionAttributeValues: {
                 ':currentStartOfWeek': currentDate.startOf('week').toISOString(),
             },
@@ -193,21 +211,32 @@ const getLeaderboard = async () => {
 
         const paramsLastWeek = {
             TableName: 'Weights',
-            FilterExpression: 'date >= :lastWeekStartOfWeek',
+            FilterExpression: '#date >= :lastWeekStartOfWeek',
+            ExpressionAttributeNames: {
+                '#date': 'date',  // Map #date to the reserved word 'date'
+            },
             ExpressionAttributeValues: {
                 ':lastWeekStartOfWeek': lastWeekDate.startOf('week').toISOString(),
             },
         };
 
+        // Fetch current week and last week data from DynamoDB
         const currentWeekData = await dynamoDb.scan(paramsCurrent).promise();
         const lastWeekData = await dynamoDb.scan(paramsLastWeek).promise();
 
-        if (!currentWeekData.Items.length || !lastWeekData.Items.length) {
+        // Ensure that Items exist in both data sets
+        if (!currentWeekData.Items || !currentWeekData.Items.length || !lastWeekData.Items || !lastWeekData.Items.length) {
             return { statusCode: 200, body: JSON.stringify([]) };
         }
 
         // Logic to calculate leaderboard...
         const groupAndAverage = (data) => {
+            // Ensure data is an array
+            if (!Array.isArray(data)) {
+                console.error('Invalid data format', data);
+                return [];
+            }
+
             const grouped = data.reduce((acc, user) => {
                 if (!acc[user.username]) {
                     acc[user.username] = { totalFatMass: 0, count: 0 };
@@ -223,8 +252,8 @@ const getLeaderboard = async () => {
             }));
         };
 
-        const avgCurrentWeekData = groupAndAverage(currentWeekData);
-        const avgLastWeekData = groupAndAverage(lastWeekData);
+        const avgCurrentWeekData = groupAndAverage(currentWeekData.Items);  // Use Items here
+        const avgLastWeekData = groupAndAverage(lastWeekData.Items);        // Use Items here
 
         const leaderboard = avgCurrentWeekData
             .map((userThisWeek) => {
@@ -248,7 +277,10 @@ const getLeaderboard = async () => {
             (a, b) => b.fatLossPercentage - a.fatLossPercentage
         );
 
-        return { statusCode: 200, body: JSON.stringify(rankedData) };
+        return { statusCode: 200, 
+            body: JSON.stringify(rankedData) ,
+            headers: { 'Content-Type': 'application/json' }, 
+        };
 
     } catch (err) {
         console.error('Error fetching data:', err);
@@ -259,11 +291,21 @@ const getLeaderboard = async () => {
     }
 };
 
-const serveStaticFiles = async (event) => {
-    // Serve front-end files from S3 or similar
-    return {
-        statusCode: 200,
-        body: 'Static file handling goes here',
-        headers: { 'Content-Type': 'text/html' },
-    };
-};
+// Helper function to read and return file content
+function serveFile(filePath, contentType) {
+    try {
+        const fileContent = fs.readFileSync(filePath, 'utf8');
+        return {
+            statusCode: 200,
+            body: fileContent,
+            headers: { 'Content-Type': contentType },
+        };
+    } catch (err) {
+        console.error('Error reading file:', err);
+        return {
+            statusCode: 500,
+            body: 'Internal Server Error',
+            headers: { 'Content-Type': 'text/plain' },
+        };
+    }
+}
