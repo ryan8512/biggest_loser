@@ -1,4 +1,5 @@
 let username = "";
+let debug_setting = 0;
 
 document.getElementById('usernameForm').addEventListener('submit', function(event) {
     event.preventDefault(); // Prevent the form from submitting normally
@@ -18,67 +19,78 @@ document.getElementById('usernameForm').addEventListener('submit', function(even
     checkUsernameExistence(username);
 });
 
-document.getElementById('formContainer').addEventListener('submit', function(event) {
-    if (event.target && event.target.id === 'weightEntry') {
-        event.preventDefault(); // Prevent the form from submitting normally
+// document.getElementById('formContainer').addEventListener('submit', function(event) {
+//     if (event.target && event.target.id === 'weightEntry') {
+//         event.preventDefault(); // Prevent the form from submitting normally
 
-        const date = document.getElementById('date').value.trim();
-        const weight = document.getElementById('weight').value.trim();
-        const fat_pctg = document.getElementById('fat_pctg').value.trim();
+//         const date = document.getElementById('date').value.trim();
+//         const weight = document.getElementById('weight').value.trim();
+//         const fat_pctg = document.getElementById('fat_pctg').value.trim();
 
-        // Call the API to check if the username exists
-        weightEntry(username,date,weight,fat_pctg);
-    }
-});
+//         // Call the API to check if the username exists
+//         weightEntry(username,date,weight,fat_pctg);
+//     }
+// });
 
-document.getElementById("leaderboard").addEventListener('click', async (event) => {
+window.onload = async (event) => {
+    // Call your function to fetch and display the leaderboard here
+    await showLeaderboard(event);
+};
+
+async function showLeaderboard(event){
     try {
-        reset_display();
-        const response = await fetch('/get-leaderboard'); // Send a GET request to the endpoint
-        if (response.ok) {
-            const data = await response.json();
+        //reset_display(); // Assuming this resets any previous display, keep it here
+        let data = ""
+        // Dummy data to simulate the API response
+        if(debug_setting == 1){
+            data = [
+                { "name": "Person 1", "fatLossPercentage": 80 },
+                { "name": "Person 2", "fatLossPercentage": 60 },
+                { "name": "Person 3", "fatLossPercentage": 40 }
+            ];
+        }else{
+            const response = await fetch('/get-leaderboard'); // Send a GET request to the endpoint
 
-            // Create a table dynamically
-            const table = document.createElement('table');
-            table.border = "1"; // Add a border for better visibility
-
-            // Add table headers (assuming the first object's keys are representative)
-            const headers = Object.keys(data[0]);
-            const thead = document.createElement('thead');
-            const headerRow = document.createElement('tr');
-            headers.forEach(header => {
-                const th = document.createElement('th');
-                th.textContent = header; // Set the column name
-                headerRow.appendChild(th);
-            });
-            thead.appendChild(headerRow);
-            table.appendChild(thead);
-
-            // Add table rows
-            const tbody = document.createElement('tbody');
-            data.forEach(row => {
-                const tr = document.createElement('tr');
-                headers.forEach(header => {
-                    const td = document.createElement('td');
-                    td.textContent = row[header]; // Fill cell with corresponding data
-                    tr.appendChild(td);
-                });
-                tbody.appendChild(tr);
-            });
-            table.appendChild(tbody);
-
-            // Display the table in the result div
-            const resultDiv = document.getElementById('result');
-            resultDiv.innerHTML = ''; // Clear previous content
-            resultDiv.appendChild(table);
-        } else {
-            document.getElementById('result').innerHTML = 'Error fetching data';
+            if(response.ok){
+                data = await response.json();
+            }  else {
+                document.getElementById('weekly-leaderboard').innerHTML = 'Error fetching data';
+            }
         }
+        
+        // Get the container where the leaderboard should be displayed
+        const leaderboardContainer = document.getElementById('weekly-leaderboard');
+        // Clear any previous content
+        leaderboardContainer.innerHTML = `
+            <h5 class="header-font"><b>Week 1 Ranking</b></h5>
+            <h6 class="header-font">By Fat Percentage (%) Loss</h6>
+            <div style="height: 15px;"></div>
+        `; // Reset title and other content
+        // Iterate through the data and dynamically create bars
+        data.forEach((entry, index) => {
+            const barContainer = document.createElement('div');
+            barContainer.classList.add('bar-container');
+            // Create the label (name of the person)
+            const label = document.createElement('div');
+            label.classList.add('label');
+            label.textContent = entry.name; // Assuming 'name' is a field in your data
+            // Create the bar (fat percentage loss)
+            const bar = document.createElement('div');
+            bar.classList.add('bar');
+            bar.textContent = `${entry.fatLossPercentage}%`; // Assuming 'fatLossPercentage' is a field in your data
+            bar.style.width = `${entry.fatLossPercentage}%`; // Set the width of the bar according to fat loss
+            bar.style.backgroundColor = `hsl(210, 100%, ${20 + index * 5}%)`; // Change the color based on index
+            // Append the label and bar to the bar container
+            barContainer.appendChild(label);
+            barContainer.appendChild(bar);
+            // Append the bar container to the leaderboard
+            leaderboardContainer.appendChild(barContainer);
+        });
     } catch (error) {
         console.error('Fetch error:', error);
-        document.getElementById('result').innerHTML = 'Fetch error occurred';
+        document.getElementById('weekly-leaderboard').innerHTML = 'Fetch error occurred';
     }
-});
+};
 
 function checkUsernameExistence(username) {
     // Example API endpoint (you would replace this with your actual API endpoint)
