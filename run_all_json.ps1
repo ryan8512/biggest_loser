@@ -36,6 +36,11 @@ $SAM_INVOKE_RESPONSE = sam local invoke ApiHandler -e ./sam_local_json/check_wei
 Write-Host "SAM local invocation complete. Response:"
 Write-Host $SAM_INVOKE_RESPONSE
 
+# Delete the file
+Remove-Item -Path ./sam_local_json/check_weight_event.json -Force
+
+Write-Host "Deleted check_weight_event2.json with token."
+
 # Step 2B: Update check_weight_event.json with the token
 # Update the Authorization header in check_weight_event.json with the extracted token
 $UPDATED_CHECK_WEIGHT_EVENT = jq --arg token "Bearer $TOKEN" '.headers.Authorization = $token' ./sam_local_json/check_weight_event2.json
@@ -49,6 +54,11 @@ Write-Host "Updated check_weight_event2.json with token."
 $SAM_INVOKE_RESPONSE = sam local invoke ApiHandler -e ./sam_local_json/check_weight_event2.json
 Write-Host "SAM local invocation complete. Response:"
 Write-Host $SAM_INVOKE_RESPONSE
+
+# Delete the file
+Remove-Item -Path ./sam_local_json/check_weight_event2.json -Force
+
+Write-Host "Deleted check_weight_event2.json with token."
 
 
 # Step 3: Check the input data in DynamoDB
@@ -67,6 +77,12 @@ $UPDATED_CHECK_WEIGHT_EVENT = jq --arg token "Bearer $TOKEN" '.headers.Authoriza
 $UPDATED_CHECK_WEIGHT_EVENT | Set-Content -Path ./sam_local_json/get_user_stat.json -Force
 
 Write-Host "Updated get_user_stat.json with token."
+
+#Invoke it you want to test this, but for now, skip this! 
+# Delete the file
+Remove-Item -Path ./sam_local_json/get_user_stat.json -Force
+
+Write-Host "Deleted get_user_stat.json with token."
 
 # Pause to keep the terminal open (optional)
 Read-Host -Prompt "Press Enter to exit"

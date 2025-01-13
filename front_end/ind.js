@@ -47,12 +47,6 @@ async function showLeaderboard(event, fetch_path){
         
         // Get the container where the leaderboard should be displayed
         const leaderboardContainer = document.getElementById(fetch_id);
-        // Clear any previous content
-        leaderboardContainer.innerHTML = `
-            <h5 class="header-font"><b>Week 1 Ranking</b></h5>
-            <h6 class="header-font">By Fat Percentage (%) Loss</h6>
-            <div style="height: 15px;"></div>
-        `; // Reset title and other content
         // Iterate through the data and dynamically create bars
         data.forEach((entry, index) => {
             const barContainer = document.createElement('div');

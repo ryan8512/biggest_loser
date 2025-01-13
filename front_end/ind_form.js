@@ -36,15 +36,15 @@ async function showUserStat(event, fetch_path, token){
                 const userStat = data;
             
                 // Update the UI with the fetched data
-                document.getElementById('weight').innerText = userStat.weight + " kg";
-                document.getElementById('fat-pctg').innerText = userStat.fat_pctg + "%";
-                document.getElementById('fat-mass').innerText = userStat.fat_mass + " kg";
+                document.getElementById('weight').innerText = parseFloat(userStat.weight).toFixed(2) + " kg";
+                document.getElementById('fat-pctg').innerText = parseFloat(userStat.fat_pctg).toFixed(2) + "%";
+                document.getElementById('fat-mass').innerText = parseFloat(userStat.fat_mass).toFixed(2) + " kg";
                 
-                // Optionally update progress bars or other elements for percentage change
-                const weightChange = calculatePercentageChange(userStat.weight);
-                document.getElementById('weight-change').innerText = weightChange + "%";
-                const fatPctgChange = calculatePercentageChange(userStat.fat_pctg);
-                document.getElementById('fat-pctg-change').innerText = fatPctgChange + "%";
+                // Optionally update progress bars or other elements for percentage change (Moved to v1.1)
+                // const weightChange = calculatePercentageChange(userStat.weight);
+                // document.getElementById('weight-change').innerText = weightChange + "%";
+                // const fatPctgChange = calculatePercentageChange(userStat.fat_pctg);
+                // document.getElementById('fat-pctg-change').innerText = fatPctgChange + "%";
 
             }  else {
                 document.getElementById(fetch_id).innerHTML = 'Error fetching data';
@@ -59,12 +59,12 @@ async function showUserStat(event, fetch_path, token){
 document.getElementById('weight-entry').addEventListener('submit', function (event) {
     event.preventDefault(); // Prevent default form submission behavior
 
-    const date = document.getElementById('date').value.trim();
-    const weight = document.getElementById('weight').value.trim();
-    const fat_pctg = document.getElementById('fat-percentage').value.trim();
+    const date = document.getElementById('date_input').value.trim();
+    const weight = document.getElementById('weight_input').value.trim();
+    const fat_pctg = document.getElementById('fat_pctg_input').value.trim();
 
     // Call the API to check if the username exists
-    weightEntry(username,date,weight,fat_pctg);
+    weightEntry(date,weight,fat_pctg);
 
 });
 
