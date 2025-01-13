@@ -1,7 +1,6 @@
 {
-  "httpMethod": "POST",
-  "path": "/check-weight",
-  "body": "{\"date\": \"2025-01-12\", \"weight\": \"80\", \"fat_pctg\": \"20\"}",
+  "httpMethod": "GET",
+  "path": "/get-user-stat",
   "headers": {
     "Content-Type": "application/json",
     "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImpvaG5kb2UiLCJpYXQiOjE3MzY3NTg5NTMsImV4cCI6MTczNjc2MjU1M30.QV1kj_qPgHkbaRLjQLReByI8WUjAu3k9LcyBo8I6D0g"

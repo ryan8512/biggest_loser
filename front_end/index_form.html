@@ -101,8 +101,9 @@
         </div>
         <div style="height: 30px;"></div>
         <h6 class="body-font" style="color: antiquewhite;">You are logged in as:</h6>
-        <h3 style="font-family: Bookman Old Style; color: rgb(252, 209, 103); margin-top: 0;"><b><i>username123</i></b></h3> <!--modify-->
-        <div style="height: 30px;"></div>
+        <h3 id="username_id" style="font-family: Bookman Old Style; color: rgb(252, 209, 103); margin-top: 0;"><!--modify_username--></h3> 
+        <button type="submit" id="logout_button" class="btn btn-primary" style="border-radius: 20px; font-family: Bahnschrift">Logout</button>
+        <div style="height: 30px;"></div><
       </div>
     </div>
   </head>
@@ -127,14 +128,14 @@
         <h5 class="body-font"><b>Overall Progress</b></h5>
         <div style="height: 15px;"></div>
 
-        <div class="card-container">
+        <div id="user-stat" class="card-container">
           <!-- Overall Progress: Weight -->
           <div class="card">
             <img class="card-img-top" src="https://www.health.com/thmb/i53eXfFOLVSnHut9cFTXhGp3RkE=/2000x0/filters:no_upscale():max_bytes(150000):strip_icc()/weight-scale-AdobeStock_285381693-2000-ffbac73943c246fead5732de6bd1105d.jpeg" alt="Card image">
             <div class="card-body">
               <h5 class="card-title body-font" style="margin-bottom: 20px;"><u>Weight</u></h5>
-              <h6 class="card-text body-font">75 kg</h6> <!--modify-->
-              <h6 class="body-font"><b>-10%</b></h6>  <!--modify-->
+              <h6 id="weight" class="card-text body-font">-</h6> 
+              <h6 id="weight-change" class="body-font"><b>-</b></h6>
             </div>
           </div>
 
@@ -143,26 +144,26 @@
             <img class="card-img-top" src="https://media.istockphoto.com/id/1254657413/photo/woman-touching-her-fat-belly.jpg?s=612x612&w=0&k=20&c=MakEHGQTlgYgZCRvUykoHZlHChhsNiJErOgxxVhQl7s=" alt="Card image">
             <div class="card-body">
               <h5 class="card-title body-font" style="margin-bottom: 20px;"><u>Fat Percentage</u></h5>
-              <h6 class="card-text body-font">20%</h6>  <!--modify-->
-              <h6 class="body-font"><b>-15%</b></h6>  <!--modify-->
+              <h6 id="fat-pctg" class="card-text body-font">-</h6> 
+              <h6 id="fat-pctg-change" class="body-font"><b>-</b></h6>
             </div>
           </div>
 
-          <!-- Overall Progress: Ranking -->
+          <!-- Overall Progress: Fat Mass -->
           <div class="card">
             <img class="card-img-top" src="https://dims.apnews.com/dims4/default/9f27905/2147483647/strip/true/crop/8640x5760+0+0/resize/1440x960!/format/webp/quality/90/?url=https%3A%2F%2Fassets.apnews.com%2F60%2Fe4%2F85db9f7e637fb8822abc62dce969%2F5ee40361bcbb47fa90e9de92e934fe5b" alt="Card image">
             <div class="card-body">
-              <h5 class="card-title body-font" style="margin-bottom: 20px;"><u>Ranking</u></h5>
-              <h6 class="card-text body-font">Top 5</h6>  <!--modify-->
-              <h6 class="body-font"><b>+2</b></h6>  <!--modify-->
+              <h5 class="card-title body-font" style="margin-bottom: 20px;"><u>Fat Mass</u></h5>
+              <h6 id="fat-mass" class="card-text body-font">-</h6>  
+              <h6 id="fat-mass-change" class="body-font"><b>-</b></h6>  
             </div>
-          </div>
+          </div> 
 
         </div>
       </div>
 
       <!-- Submission Form -->
-      <div class="grid-box mask-shadow" style="background-color: rgb(192, 208, 213);">
+      <form id="weight-entry" class="grid-box mask-shadow" style="background-color: rgb(192, 208, 213);">
         <h5 class="body-font"><b>Please fill in the following information:</b></h5>
         <div style="height: 15px;"></div>
 
@@ -183,12 +184,17 @@
         </div>
         <div style="height: 20px;"></div>
         <!-- Submit Button -->
-        <button type="button" class="btn btn-primary" style="width: 400px; height: 40px; font-size: 20px; padding: 5px; border-radius: 8px; font-family: Bahnschrift">Submit</button>
-      </div>
+        <button type="submit" class="btn btn-primary" style="width: 400px; height: 40px; font-size: 20px; padding: 5px; border-radius: 8px; font-family: Bahnschrift">Submit</button>
+        <div class="body-font" id="message" style="color: red;"></div>
+      </form>
     </div>
+    
 
     <div style="height: 20px;"></div>
     <p class="mb-0" style="margin-top: 5px; font-family: Avenir Next Condensed; text-align: center; color: antiquewhite;">-&nbsp;APH Wellness Committee&nbsp;-</p>
     <div style="height: 10px;"></div>
+    <!-- Include jwt-decode using CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/jwt-decode@3.1.2/build/jwt-decode.min.js"></script>
+    <script src="ind_form.js"></script>
 </body>
 </html>
