@@ -1,24 +1,24 @@
 const moment = require('moment');
 const jwt = require('jsonwebtoken');
-
-// DynamoDB initialization (use DynamoDB for createTable, DocumentClient for other operations)
 const AWS = require('aws-sdk');
+const fs = require('fs');
+const path_lib = require('path');
+const s3 = new AWS.S3();
+const BUCKET_NAME = 'biggestloser8152'; // Replace with your S3 bucket name
 
 const isLocal = process.env.AWS_SAM_LOCAL === 'true';
 
 let dynamoDb = null;
 let dynamoDbService = null;
-const fs = require('fs');;
-const path_lib = require('path');
 console.log(isLocal);
 
 if(isLocal){
     dynamoDb = new AWS.DynamoDB.DocumentClient({
-        region: 'us-west-2',
+        region: 'us-east-1',
         endpoint: 'http://host.docker.internal:8000/',   //'http://host.docker.internal:8000/'  http://192.168.1.21:8000/
     });
     dynamoDbService = new AWS.DynamoDB({
-        region: 'us-west-2',
+        region: 'us-east-1',
         endpoint: 'http://host.docker.internal:8000/', 
     });
 }else{
@@ -57,92 +57,72 @@ async function createTable() {
     }
 }
 
+// Helper function to add CORS headers to the response
+const addCORSHeaders = (response) => {
+    // If the response already has a statusCode, leave it intact, otherwise set default 200
+    const statusCode = response.statusCode;
+
+    return {
+        statusCode,
+        body: JSON.stringify(response.body),
+        headers: {
+            'Content-Type': 'application/json',
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Methods': 'GET,POST,OPTIONS',
+            'Access-Control-Allow-Headers': 'Content-Type,Authorization,X-Amz-Date,X-Amz-Security-Token,X-Amz-User-Agent'
+        }
+    };
+};
+
 exports.handler = async (event) => {
-    if(isLocal){
+    if (isLocal) {
         await createTable();
     }
 
-    const { httpMethod, path  } = event;
+    const { httpMethod, path } = event;
 
     try {
-        // Serve `index.html` for the root path
-        if (path === '/' || path === '/index.html') {
-            const filePath = path_lib.join(__dirname, '../front_end/index.html');
-            return serveFile(filePath, 'text/html');
-        }
-
-        // Serve `ind.js` for JavaScript requests
-        if (path === '/ind.js') {
-            const filePath = path_lib.join(__dirname, '../front_end/ind.js');
-            return serveFile(filePath, 'application/javascript');
-        }
-
-        if (path === '/ind_form.js') {
-            const filePath = path_lib.join(__dirname, '../front_end/ind_form.js');
-            return serveFile(filePath, 'application/javascript');
-        }
-
-        // Token validation and serving `index_form.html` if valid token exists
         if (httpMethod === 'GET' && path === '/index_form.html') {
             try {
                 // Validate the token
                 const decodedToken = verifyToken(event);
                 const userToken = decodedToken.username;
-                
-                // If token is valid, serve the `index_form.html` page
-                const filePath = path_lib.join(__dirname, '../front_end/index_form.html');
-                return serveFile(filePath, 'text/html',userToken);
+
+                // Serve the dynamic page with user-specific data
+                return await fetchFileFromS3('index_form.html', 'text/html', userToken);
             } catch (error) {
-                // If the token is invalid or not provided, redirect to login page or send error
-                return {
-                    statusCode: 401,
-                    body: JSON.stringify({ message: 'Unauthorized: ' + error.message }),
-                };
+                return addCORSHeaders({statusCode: 401, message: 'Unauthorized: ' + error.message });
             }
         }
 
         if (httpMethod === 'POST' && path === '/check-username') {
-            return await checkUsername(event);
+            return addCORSHeaders(await checkUsername(event));
         }
 
         if (httpMethod === 'POST' && path === '/check-weight') {
-            return await checkWeight(event);
+            return addCORSHeaders(await checkWeight(event));
         }
 
         if (httpMethod === 'GET' && path === '/get-weekly-leaderboard') {
-            return await getWeeklyLeaderboard(event);
+            return addCORSHeaders(await getWeeklyLeaderboard(event));
         }
 
         if (httpMethod === 'GET' && path === '/get-overall-leaderboard') {
-            return await getOverallLeaderboard(event);
+            return addCORSHeaders(await getOverallLeaderboard(event));
         }
 
         if (httpMethod === 'GET' && path === '/get-user-stat') {
-            // Validate the token
             const decodedToken = verifyToken(event);
             const userToken = decodedToken.username;
-            return await getUserStat(userToken);
+            return addCORSHeaders(await getUserStat(userToken));
         }
 
-        if (httpMethod === 'GET') {
-             // Serve static files
-             const filePath = path_lib.join(__dirname, '../front_end/index.html');
-            return serveFile(filePath, 'text/html');
-        }
-
-        return {
-            statusCode: 404,
-            body: JSON.stringify({ message: 'Route not found' }),
-        };
+        return addCORSHeaders({statusCode: 404, message: 'Route not found' });
     } catch (error) {
         console.error('Error:', error);
-        return {
-            statusCode: 500,
-            body: JSON.stringify({ message: 'Internal Server Error' }),
-        };
+        return addCORSHeaders({statusCode: 500, message: 'Internal Server Error' });
     }
 };
-
 const verifyToken = (event) => {
     const authHeader = event.headers.Authorization || event.headers.authorization;
     const token = event.queryStringParameters?.token || (authHeader && authHeader.startsWith('Bearer ') && authHeader.split(' ')[1]);
@@ -458,3 +438,32 @@ const getUserStat = async (username) => {
         };
     }
 };
+
+// Helper function to fetch file from S3
+async function fetchFileFromS3(key, contentType, userToken = null) {
+    try {
+        const s3Params = {
+            Bucket: BUCKET_NAME ,
+            Key: key,
+        };
+        const s3Object = await s3.getObject(s3Params).promise();
+        let fileContent = s3Object.Body.toString('utf-8');
+
+        if (userToken) {
+            fileContent = fileContent.replace('<!--modify_username-->', `<b><i>${userToken}</i></b>`);
+        }
+
+        return {
+            statusCode: 200,
+            body: fileContent,
+            headers: { 'Content-Type': contentType },
+        };
+    } catch (err) {
+        console.error('Error fetching file from S3:', err);
+        return {
+            statusCode: 500,
+            body: 'Internal Server Error',
+            headers: { 'Content-Type': 'text/plain' },
+        };
+    }
+}

@@ -1,13 +1,23 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
+Globals:
+  Api:
+    Cors:
+      AllowMethods: "'GET,POST,OPTIONS'"
+      AllowHeaders: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token,X-Amz-User-Agent'"
+      AllowOrigin: "'*'"
 Resources:
   ApiHandler:
     Type: AWS::Serverless::Function
     Properties:
       Handler: back_end/index_aws.handler
       Runtime: nodejs22.x
-      Timeout: 60 
+      Timeout: 60
       MemorySize: 128
+      Policies:
+        - arn:aws:iam::aws:policy/AmazonS3ReadOnlyAccess
+        - DynamoDBCrudPolicy:
+            TableName: !Ref Weights
       Events:
         CheckUsername:
           Type: Api
@@ -19,21 +29,26 @@ Resources:
           Properties:
             Path: /check-weight
             Method: post
-        GetLeaderboard:
+        GetWeeklyLeaderboard: 
           Type: Api
           Properties:
-            Path: /get-leaderboard
+            Path: /get-weekly-leaderboard
             Method: get
-        Root:
+        GetOverallLeaderboard:
           Type: Api
           Properties:
-            Path: /
-            Method: any
-        CatchAll:
+            Path: /get-overall-leaderboard
+            Method: get
+        GetUserStat:
           Type: Api
           Properties:
-            Path: /{proxy+}
-            Method: any
+            Path: /get-user-stat
+            Method: get
+        GetIndexForm:
+          Type: Api
+          Properties:
+            Path: /index_form.html
+            Method: get
   Weights:
     Type: AWS::DynamoDB::Table
     Properties:
@@ -48,6 +63,11 @@ Resources:
           KeyType: HASH
         - AttributeName: date
           KeyType: RANGE
-      ProvisionedThroughput:
-        ReadCapacityUnits: 5
-        WriteCapacityUnits: 5
+      BillingMode: PAY_PER_REQUEST
+Outputs:
+  ApiEndpoint:
+    Description: "API Gateway endpoint"
+    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/"
+  DynamoDBTableName:
+    Description: "DynamoDB Table Name"
+    Value: !Ref Weights

@@ -1,6 +1,8 @@
 let username = "";
 let debug_setting = 0;
 
+const apiBaseUrl = "https://1xx3kbyila.execute-api.us-east-1.amazonaws.com/Prod/"; // Replace with your actual API URL
+
 document.getElementById('usernameForm').addEventListener('submit', function(event) {
     event.preventDefault(); // Prevent the form from submitting normally
 
@@ -17,8 +19,8 @@ document.getElementById('usernameForm').addEventListener('submit', function(even
 
 window.onload = async (event) => {
     // Call your function to fetch and display the leaderboard here
-    await showLeaderboard(event,'/get-weekly-leaderboard');
-    await showLeaderboard(event,'/get-overall-leaderboard');
+    await showLeaderboard(event, '/get-weekly-leaderboard');
+    await showLeaderboard(event, '/get-overall-leaderboard');
 };
 
 async function showLeaderboard(event, fetch_path){
@@ -34,8 +36,13 @@ async function showLeaderboard(event, fetch_path){
                 { "name": "Person 3", "fatLossPercentage": 40 }
             ];
         }else{
-            const response = await fetch(fetch_path); // Send a GET request to the endpoint
-
+            const response = await fetch(apiBaseUrl + fetch_path, {
+                method: 'GET', 
+                mode: 'cors', 
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+        }); 
             
             if(response.ok){
                 fetch_id = fetch_path.replace("/get-", "");
@@ -79,8 +86,8 @@ async function showLeaderboard(event, fetch_path){
 };
 
 async function checkUsernameExistence(username) {
-    // Example API endpoint (you would replace this with your actual API endpoint)
-    const apiEndpoint = `/check-username`;
+    // Use the full API URL here as well
+    const apiEndpoint = `${apiBaseUrl}/check-username`;
 
     try {
         const response = await fetch(apiEndpoint, {
@@ -89,15 +96,18 @@ async function checkUsernameExistence(username) {
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify({ username }),
+            mode:'cors'
         });
 
         if (response.ok) {
-            const { token } = await response.json();
+            const data = await response.json();
+            const { token } = JSON.parse(data); // Parse the JSON string
             localStorage.setItem('authToken', token);
             window.location.href = `/index_form.html?token=${encodeURIComponent(token)}`;
         } else {
             const error = await response.json();
-            document.getElementById('message').textContent = error.message;
+            const parsedJson = JSON.parse(error); // Parse the JSON string
+            document.getElementById('message').textContent = parsedJson.message;
         }
     } catch (error) {
         document.getElementById('message').textContent = 'An error occurred';

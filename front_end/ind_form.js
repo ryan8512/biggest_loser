@@ -1,3 +1,5 @@
+const apiBaseUrl = "https://1xx3kbyila.execute-api.us-east-1.amazonaws.com/Prod/"; // Replace this with your actual API base URL
+
 document.getElementById('logout_button').addEventListener('click', (event) => {
     localStorage.removeItem('authToken');
     window.location.href = '/index.html';
@@ -12,48 +14,42 @@ window.onload = async (event) => {
         return;
     }
 
-    await showUserStat(event,'/get-user-stat', token);
-}
+    await showUserStat(event, `${apiBaseUrl}/get-user-stat`, token);
+};
 
-async function showUserStat(event, fetch_path, token){
-        try {
-            let data = ""
-            let fetch_id = ""
-            
-            const response = await fetch(fetch_path,{
-                method: 'GET',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}` // Add the Bearer token
-                }
-            }); // Send a GET request to the endpoint
-            
-            if(response.ok){
-                fetch_id = fetch_path.replace("/get-", "");
-                data = await response.json();
-                console.log(data);
+async function showUserStat(event, fetch_path, token) {
+    try {
+        let data = "";
+        let fetch_id = "";
 
-                const userStat = data;
-            
-                // Update the UI with the fetched data
-                document.getElementById('weight').innerText = parseFloat(userStat.weight).toFixed(2) + " kg";
-                document.getElementById('fat-pctg').innerText = parseFloat(userStat.fat_pctg).toFixed(2) + "%";
-                document.getElementById('fat-mass').innerText = parseFloat(userStat.fat_mass).toFixed(2) + " kg";
-                
-                // Optionally update progress bars or other elements for percentage change (Moved to v1.1)
-                // const weightChange = calculatePercentageChange(userStat.weight);
-                // document.getElementById('weight-change').innerText = weightChange + "%";
-                // const fatPctgChange = calculatePercentageChange(userStat.fat_pctg);
-                // document.getElementById('fat-pctg-change').innerText = fatPctgChange + "%";
+        const response = await fetch(fetch_path, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}` // Add the Bearer token
+            },
+            mode: 'cors'
+        }); // Send a GET request to the endpoint
 
-            }  else {
-                document.getElementById(fetch_id).innerHTML = 'Error fetching data';
-            }
-        }catch (error) {
-            console.error('Fetch error:', error);
-            document.getElementById("user-stat").innerHTML = 'Fetch error occurred';
+        if(response.ok){
+            fetch_id = fetch_path.replace("/get-", "");
+            data = await response.json();
+            console.log(data);
+
+            const userStat = data;
+
+            // Update the UI with the fetched data
+            document.getElementById('weight').innerText = parseFloat(userStat.weight).toFixed(2) + " kg";
+            document.getElementById('fat-pctg').innerText = parseFloat(userStat.fat_pctg).toFixed(2) + "%";
+            document.getElementById('fat-mass').innerText = parseFloat(userStat.fat_mass).toFixed(2) + " kg";
+
+        } else {
+            document.getElementById(fetch_id).innerHTML = 'Error fetching data';
         }
-        
+    } catch (error) {
+        console.error('Fetch error:', error);
+        document.getElementById("user-stat").innerHTML = 'Fetch error occurred';
+    }
 };
 
 document.getElementById('weight-entry').addEventListener('submit', function (event) {
@@ -64,12 +60,11 @@ document.getElementById('weight-entry').addEventListener('submit', function (eve
     const fat_pctg = document.getElementById('fat_pctg_input').value.trim();
 
     // Call the API to check if the username exists
-    weightEntry(date,weight,fat_pctg);
-
+    weightEntry(date, weight, fat_pctg);
 });
 
 function weightEntry(date, weight, fat_pctg) {
-    const apiEndpoint2 = `/check-weight`;
+    const apiEndpoint2 = `${apiBaseUrl}/check-weight`;
     const token = localStorage.getItem('authToken'); // Retrieve the token from localStorage
 
     if (!token) {
@@ -83,7 +78,8 @@ function weightEntry(date, weight, fat_pctg) {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${token}`, // Add the token to the Authorization header
         },
-        body: JSON.stringify({date, weight, fat_pctg }),
+        mode: 'cors',
+        body: JSON.stringify({ date, weight, fat_pctg })
     }).then(async (response) => {
         const data = await response.json();
         if (response.ok) {
@@ -98,7 +94,6 @@ function weightEntry(date, weight, fat_pctg) {
         console.error('Error submitting the form:', error);
         document.getElementById('message').textContent = 'An error occurred while submitting the form.';
     });
-        
 }
 
 function calculatePercentageChange(currentValue) {
