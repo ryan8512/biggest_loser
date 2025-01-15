@@ -59,12 +59,11 @@ async function createTable() {
 
 // Helper function to add CORS headers to the response
 const addCORSHeaders = (response) => {
-    // If the response already has a statusCode, leave it intact, otherwise set default 200
     const statusCode = response.statusCode;
 
     return {
         statusCode,
-        body: JSON.stringify(response.body),
+        body: response.body,
         headers: {
             'Content-Type': 'application/json',
             'Access-Control-Allow-Origin': '*',
@@ -82,17 +81,8 @@ exports.handler = async (event) => {
     const { httpMethod, path } = event;
 
     try {
-        if (httpMethod === 'GET' && path === '/index_form.html') {
-            try {
-                // Validate the token
-                const decodedToken = verifyToken(event);
-                const userToken = decodedToken.username;
-
-                // Serve the dynamic page with user-specific data
-                return await fetchFileFromS3('index_form.html', 'text/html', userToken);
-            } catch (error) {
-                return addCORSHeaders({statusCode: 401, message: 'Unauthorized: ' + error.message });
-            }
+        if (httpMethod === 'POST' && path === '/check-index-form') {
+            return addCORSHeaders(await fetchPresignedURL(event));
         }
 
         if (httpMethod === 'POST' && path === '/check-username') {
@@ -112,20 +102,19 @@ exports.handler = async (event) => {
         }
 
         if (httpMethod === 'GET' && path === '/get-user-stat') {
-            const decodedToken = verifyToken(event);
-            const userToken = decodedToken.username;
-            return addCORSHeaders(await getUserStat(userToken));
+            return addCORSHeaders(await getUserStat(event));
         }
 
-        return addCORSHeaders({statusCode: 404, message: 'Route not found' });
+        return addCORSHeaders({statusCode: 404, body: JSON.stringify({message: 'Route not found' })});
     } catch (error) {
         console.error('Error:', error);
-        return addCORSHeaders({statusCode: 500, message: 'Internal Server Error' });
+        return addCORSHeaders({statusCode: 500, body: JSON.stringify({message: 'Internal Server Error' })});
     }
 };
+
 const verifyToken = (event) => {
     const authHeader = event.headers.Authorization || event.headers.authorization;
-    const token = event.queryStringParameters?.token || (authHeader && authHeader.startsWith('Bearer ') && authHeader.split(' ')[1]);
+    const token = JSON.parse(event.body)?.token || (authHeader && authHeader.startsWith('Bearer ') && authHeader.split(' ')[1]);
 
     if (!token) {
         throw new Error('Unauthorized: No token provided');
@@ -363,31 +352,10 @@ function leaderboard_logic(currentWeekData,lastWeekData){
     };
 }
 
-// Helper function to read and return file content
-function serveFile(filePath, contentType, userToken = null) {
-    try {
-        let fileContent = fs.readFileSync(filePath, 'utf8');
-
-        if(userToken){
-            fileContent = fileContent.replace('<!--modify_username-->', `<b><i>${userToken}</i></b>`);
-        }
-
-        return {
-            statusCode: 200,
-            body: fileContent,
-            headers: { 'Content-Type': contentType },
-        };
-    } catch (err) {
-        console.error('Error reading file:', err);
-        return {
-            statusCode: 500,
-            body: 'Internal Server Error',
-            headers: { 'Content-Type': 'text/plain' },
-        };
-    }
-}
-
-const getUserStat = async (username) => {
+const getUserStat = async (event) => {
+    const decodedToken = verifyToken(event);
+    const username = decodedToken.username;
+    
     try {
         // Query parameters to retrieve the most recent record for the given user
         const params = {
@@ -440,30 +408,32 @@ const getUserStat = async (username) => {
 };
 
 // Helper function to fetch file from S3
-async function fetchFileFromS3(key, contentType, userToken = null) {
-    try {
-        const s3Params = {
-            Bucket: BUCKET_NAME ,
-            Key: key,
-        };
-        const s3Object = await s3.getObject(s3Params).promise();
-        let fileContent = s3Object.Body.toString('utf-8');
+async function fetchPresignedURL(event) {
+    try{
+        // Validate the token
+        const decoded = verifyToken(event);
 
-        if (userToken) {
-            fileContent = fileContent.replace('<!--modify_username-->', `<b><i>${userToken}</i></b>`);
+        if (!decoded || !decoded.username) {
+            return {statusCode: 402, body: JSON.stringify({message:'Token not decoded' })};
         }
 
+        const params = {
+            Bucket: BUCKET_NAME,
+            Key: 'index_form.html',
+            Expires: 60 * 5, //5 minutes expiry
+        };
+        const presignedUrl = await s3.getSignedUrlPromise('getObject', params);
+
+        // Return presigned URL
         return {
             statusCode: 200,
-            body: fileContent,
-            headers: { 'Content-Type': contentType },
+            body: JSON.stringify({ url: presignedUrl })
         };
-    } catch (err) {
-        console.error('Error fetching file from S3:', err);
+
+    }catch(error){
         return {
-            statusCode: 500,
-            body: 'Internal Server Error',
-            headers: { 'Content-Type': 'text/plain' },
+            statusCode: 401, 
+            body: JSON.stringify({message: error.message })
         };
     }
 }

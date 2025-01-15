@@ -44,11 +44,11 @@ Resources:
           Properties:
             Path: /get-user-stat
             Method: get
-        GetIndexForm:
+        CheckIndexForm:
           Type: Api
           Properties:
-            Path: /index_form.html
-            Method: get
+            Path: /check-index-form
+            Method: post
   Weights:
     Type: AWS::DynamoDB::Table
     Properties:

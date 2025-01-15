@@ -1,7 +1,7 @@
 let username = "";
 let debug_setting = 0;
 
-const apiBaseUrl = "https://1xx3kbyila.execute-api.us-east-1.amazonaws.com/Prod/"; // Replace with your actual API URL
+const apiBaseUrl = "https://vx5pzolkud.execute-api.us-east-1.amazonaws.com/Prod"; // Replace with your actual API URL
 
 document.getElementById('usernameForm').addEventListener('submit', function(event) {
     event.preventDefault(); // Prevent the form from submitting normally
@@ -88,6 +88,7 @@ async function showLeaderboard(event, fetch_path){
 async function checkUsernameExistence(username) {
     // Use the full API URL here as well
     const apiEndpoint = `${apiBaseUrl}/check-username`;
+    const apiEndpoint2 = `${apiBaseUrl}/check-index-form`;
 
     try {
         const response = await fetch(apiEndpoint, {
@@ -101,13 +102,26 @@ async function checkUsernameExistence(username) {
 
         if (response.ok) {
             const data = await response.json();
-            const { token } = JSON.parse(data); // Parse the JSON string
-            localStorage.setItem('authToken', token);
-            window.location.href = `/index_form.html?token=${encodeURIComponent(token)}`;
+            localStorage.setItem('authToken', data.token);
+            const responseForm = await fetch(apiEndpoint2, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ token: data.token }),
+                mode:'cors'
+            });
+
+            if(responseForm.ok){
+                const data = await responseForm.json();
+                window.location.href = data.url; // Redirect to the presigned URL
+            }else{
+                document.getElementById('message').textContent = "Token invalid or expired"
+            }
+
         } else {
             const error = await response.json();
-            const parsedJson = JSON.parse(error); // Parse the JSON string
-            document.getElementById('message').textContent = parsedJson.message;
+            document.getElementById('message').textContent = error.message;
         }
     } catch (error) {
         document.getElementById('message').textContent = 'An error occurred';

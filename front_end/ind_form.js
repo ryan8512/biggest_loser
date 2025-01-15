@@ -1,4 +1,4 @@
-const apiBaseUrl = "https://1xx3kbyila.execute-api.us-east-1.amazonaws.com/Prod/"; // Replace this with your actual API base URL
+const apiBaseUrl = "https://vx5pzolkud.execute-api.us-east-1.amazonaws.com/Prod"; // Replace this with your actual API base URL
 
 document.getElementById('logout_button').addEventListener('click', (event) => {
     localStorage.removeItem('authToken');
@@ -14,7 +14,28 @@ window.onload = async (event) => {
         return;
     }
 
-    await showUserStat(event, `${apiBaseUrl}/get-user-stat`, token);
+    try {
+        // Split the token into parts
+        const tokenParts = token.split('.');
+    
+        if (tokenParts.length !== 3) {
+            throw new Error('Invalid token format');
+        }
+    
+        // Decode the payload (second part of the token)
+        const payload = JSON.parse(atob(tokenParts[1])); // atob decodes Base64 strings
+    
+        // Extract the username from the payload
+        const username = payload.username || 'Unknown User'; // Adjust this key based on your token structure
+    
+        // Update the DOM with the username
+        document.getElementById('username_id').innerHTML = `<b><i>${username}</i></b>`;
+    
+        // Optionally, call the showUserStat function with the token
+        await showUserStat(event, `${apiBaseUrl}/get-user-stat`, token);
+    } catch (err) {
+        console.error('Error decoding token:', err);
+    }
 };
 
 async function showUserStat(event, fetch_path, token) {
