@@ -2,3 +2,5 @@
 .env
 db_study.js
 .aws-sam
+DynamoDB_Weights.json
+initial_weighin.py

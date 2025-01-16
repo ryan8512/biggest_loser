@@ -132,7 +132,10 @@ const checkUsername = async (event) => {
     const { username } = JSON.parse(event.body || '{}');
 
     // Simulate username validation (replace with your database logic)
-    const validUsernames = ['johndoe', 'janedoe', 'admin', 'testuser'];
+    const validUsernames = ["warpedrufus", "mark", "ryan8512", "fitpokiko", "KLazo", "inchieinch", "capumali17", 
+                            "elvin6969", "sashimimojo", "mjadonis27", "jbuslig", "vintousan", "sgcalingasan", "fibi", 
+                            "jmborja", "anritsumae23", "demi1111", "lawrence", "pmc14", "riev", "jdcastro", "mmoyco", 
+                            "erika", "alucido"];
     if (!validUsernames.includes(username)) {
         return {
             statusCode: 404,
@@ -335,7 +338,9 @@ function leaderboard_logic(currentWeekData,lastWeekData){
                             userLastWeek.avgFatMass) *100
                     ).toFixed(2)
                 );
-                return { name: userThisWeek.username, fatLossPercentage };
+                // Find corresponding name based on username
+                const name = lastWeekData.Items.find(item => item.username === userThisWeek.username)?.name;
+                return { name, fatLossPercentage };
             }
 
             return null;
