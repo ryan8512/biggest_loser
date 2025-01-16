@@ -66,7 +66,12 @@ async function showLeaderboard(event, fetch_path){
             const bar = document.createElement('div');
             bar.classList.add('bar');
             bar.textContent = `${entry.fatLossPercentage}%`; // Assuming 'fatLossPercentage' is a field in your data
-            bar.style.width = `${entry.fatLossPercentage}%`; // Set the width of the bar according to fat loss
+
+            // Normalize the bar width based on the first entry
+            const maxFatLoss = data[0].fatLossPercentage; // Get the first entry's fat loss percentage
+            const normalizedWidth = (entry.fatLossPercentage / maxFatLoss) * 100; // Normalize width
+            bar.style.width = `${normalizedWidth}%`; // Set the normalized width
+            
             if(fetch_id === 'weekly-leaderboard'){
                 bar.style.backgroundColor = `hsl(210, 100%, ${20 + index * 5}%)`; // Change the color based on index
             }else{
