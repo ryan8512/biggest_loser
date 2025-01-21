@@ -10,7 +10,6 @@ const isLocal = process.env.AWS_SAM_LOCAL === 'true';
 
 let dynamoDb = null;
 let dynamoDbService = null;
-console.log(isLocal);
 
 if(isLocal){
     dynamoDb = new AWS.DynamoDB.DocumentClient({
@@ -211,35 +210,90 @@ const checkWeight = async (event) => {
 const getOverallLeaderboard = async () => {
     try {
         const currentDate = moment();
-        const lastWeekDate = moment("2025-01-08", "YYYY-MM-DD");
+        const startOfCurrentWeek = currentDate.clone().startOf('week').toISOString();  // Start of current week
+        const endOfCurrentWeek = currentDate.clone().endOf('week').toISOString();  // End of current week
+
+        const lastWeekDate = currentDate.clone().subtract(1, 'week');
+        const startOfLastWeek = lastWeekDate.clone().startOf('week').toISOString();  // Start of last week
+        const endOfLastWeek = lastWeekDate.clone().endOf('week').toISOString();  // End of last week
+        
+        const initialWeekDate = moment("2025-01-08", "YYYY-MM-DD");
+        const startOfInitialWeek = initialWeekDate.clone().startOf('week').toISOString();  // Start of initial week
+        const endOfInitialWeek = initialWeekDate.clone().endOf('week').toISOString();  // End of initial week
 
         const paramsCurrent = {
             TableName: 'Weights',
-            FilterExpression: '#date >= :currentStartOfWeek',
+            FilterExpression: '#date >= :currentStartOfWeek AND #date <= :currentEndOfWeek',
             ExpressionAttributeNames: {
                 '#date': 'date',  // Map #date to the reserved word 'date'
             },
             ExpressionAttributeValues: {
-                ':currentStartOfWeek': currentDate.startOf('week').toISOString(),
+                ':currentStartOfWeek': startOfCurrentWeek,
+                ':currentEndOfWeek': endOfCurrentWeek,
+            },
+        };
+
+        const paramsinitialWeek = {
+            TableName: 'Weights',
+            FilterExpression: '#date >= :initialWeekStartOfWeek AND #date <= :initialWeekEndOfWeek',
+            ExpressionAttributeNames: {
+                '#date': 'date',  // Map #date to the reserved word 'date'
+            },
+            ExpressionAttributeValues: {
+                ':initialWeekStartOfWeek': startOfInitialWeek,
+                ':initialWeekEndOfWeek': endOfInitialWeek,
             },
         };
 
         const paramsLastWeek = {
             TableName: 'Weights',
-            FilterExpression: '#date >= :lastWeekStartOfWeek',
+            FilterExpression: '#date >= :lastWeekStartOfWeek AND #date <= :lastWeekEndOfWeek',
             ExpressionAttributeNames: {
                 '#date': 'date',  // Map #date to the reserved word 'date'
             },
             ExpressionAttributeValues: {
-                ':lastWeekStartOfWeek': lastWeekDate.startOf('week').toISOString(),
+                ':lastWeekStartOfWeek': startOfLastWeek,
+                ':lastWeekEndOfWeek': endOfLastWeek,
             },
         };
 
-        // Fetch current week and last week data from DynamoDB
+        // Fetch current week and initial week data from DynamoDB
         const currentWeekData = await dynamoDb.scan(paramsCurrent).promise();
+        const initialWeekData = await dynamoDb.scan(paramsinitialWeek).promise();
         const lastWeekData = await dynamoDb.scan(paramsLastWeek).promise();
 
-        return leaderboard_logic(currentWeekData,lastWeekData);
+        //Filter currentWeekData and lastWeekData
+        const currentWeekMap = new Map();
+        currentWeekData.Items.forEach(item => {
+            currentWeekMap.set(item.username, item);
+        });
+
+        // Filter and merge currentWeekData and lastWeekData
+        const currentWeekDataFiltered = [...currentWeekData.Items.map(item => item.username), 
+                                         ...lastWeekData.Items.filter(item => !currentWeekMap.has(item.username)).map(item => item.username)];
+
+        // Merge currentWeekData with lastWeekData (use currentWeekData if the username exists, otherwise lastWeekData)
+        const mergedData = currentWeekDataFiltered.flatMap(username => {
+            const currentItem = currentWeekMap.get(username);
+            if (currentItem) {
+                return [currentItem];  // Use currentWeekData if available
+            } else {
+                // Find corresponding item in lastWeekData
+                return lastWeekData.Items.filter(item => item.username === username);
+            }
+        });
+
+        let mergedDataScan = {
+            Items: [],
+            Count: 0,
+            ScannedCount: 0
+        };
+
+        mergedDataScan.Items = mergedData;
+        mergedDataScan.Count = mergedData.length;
+        mergedDataScan.ScannedCount = mergedData.length;
+
+        return leaderboard_logic(mergedDataScan,initialWeekData);
 
     } catch (err) {
         console.error('Error fetching data:', err);
@@ -253,27 +307,34 @@ const getOverallLeaderboard = async () => {
 const getWeeklyLeaderboard = async () => {
     try {
         const currentDate = moment();
-        const lastWeekDate = moment().subtract(1, 'weeks');
+        const startOfCurrentWeek = currentDate.clone().startOf('week').toISOString();  // Start of current week
+        const endOfCurrentWeek = currentDate.clone().endOf('week').toISOString();  // End of current week
+        
+        const lastWeekDate = currentDate.clone().subtract(1, 'week');
+        const startOfLastWeek = lastWeekDate.clone().startOf('week').toISOString();  // Start of last week
+        const endOfLastWeek = lastWeekDate.clone().endOf('week').toISOString();  // End of last week
 
         const paramsCurrent = {
             TableName: 'Weights',
-            FilterExpression: '#date >= :currentStartOfWeek',
+            FilterExpression: '#date >= :currentStartOfWeek AND #date <= :currentEndOfWeek',
             ExpressionAttributeNames: {
                 '#date': 'date',  // Map #date to the reserved word 'date'
             },
             ExpressionAttributeValues: {
-                ':currentStartOfWeek': currentDate.startOf('week').toISOString(),
+                ':currentStartOfWeek': startOfCurrentWeek,
+                ':currentEndOfWeek': endOfCurrentWeek,
             },
         };
 
         const paramsLastWeek = {
             TableName: 'Weights',
-            FilterExpression: '#date >= :lastWeekStartOfWeek',
+            FilterExpression: '#date >= :lastWeekStartOfWeek AND #date <= :lastWeekEndOfWeek',
             ExpressionAttributeNames: {
                 '#date': 'date',  // Map #date to the reserved word 'date'
             },
             ExpressionAttributeValues: {
-                ':lastWeekStartOfWeek': lastWeekDate.startOf('week').toISOString(),
+                ':lastWeekStartOfWeek': startOfLastWeek,
+                ':lastWeekEndOfWeek': endOfLastWeek,
             },
         };
 
@@ -324,6 +385,34 @@ function leaderboard_logic(currentWeekData,lastWeekData){
     const avgCurrentWeekData = groupAndAverage(currentWeekData.Items);  // Use Items here
     const avgLastWeekData = groupAndAverage(lastWeekData.Items);        // Use Items here
 
+    //Implement caching of username to name
+    const usernameToName = {
+        "warpedrufus" : "DAJ",
+        "mark" : "Mark",
+        "ryan8512" : "Sam",
+        "fitpokiko" : "Kiko",
+        "KLazo" : "Karen Lazo",
+        "inchieinch" : "Inch",
+        "capumali17" : "Coleen",
+        "elvin6969" : "Elvin",
+        "sashimimojo" : "PauGab",
+        "mjadonis27" : "Jonas",
+        "jbuslig" : "Josh",
+        "vintousan" : "Vincent",
+        "sgcalingasan" : "Sean",
+        "fibi" : "Phoebe",
+        "jmborja" : "JM",
+        "anritsumae23" : "Gabby",
+        "demi1111" : "Demi",
+        "lawrence" : "Lawrence",
+        "pmc14" : "Mehar",
+        "riev" : "Gerds",
+        "jdcastro" : "Justine",
+        "mmoyco" : "Jan",
+        "erika" : "Erika",
+        "alucido" : "Alvin"
+    }
+
     const leaderboard = avgCurrentWeekData
         .map((userThisWeek) => {
             const userLastWeek = avgLastWeekData.find(
@@ -339,7 +428,7 @@ function leaderboard_logic(currentWeekData,lastWeekData){
                     ).toFixed(2)
                 );
                 // Find corresponding name based on username
-                const name = lastWeekData.Items.find(item => item.username === userThisWeek.username)?.name;
+                const name = usernameToName[userThisWeek.username];
                 return { name, fatLossPercentage };
             }
 
@@ -374,7 +463,6 @@ const getUserStat = async (event) => {
             },
             // Sort by the 'date' field in descending order to get the most recent record
             ScanIndexForward: false,
-            Limit: 1,  // Only fetch the latest entry
         };
 
         // Fetch the user's most recent record from DynamoDB
@@ -387,21 +475,18 @@ const getUserStat = async (event) => {
             };
         }
 
-        // Extract the latest user's record (most recent date)
-        const latestRecord = userData.Items[0];
-
-        // Construct response with relevant user data
-        const userStat = {
-            username: latestRecord.username,
-            date: latestRecord.date,
-            weight: latestRecord.weight,
-            fat_pctg: latestRecord.fat_pctg,
-            fat_mass: latestRecord.fat_mass,
-        };
+        // Prepare all user records to be sent as a response
+        const userStats = userData.Items.map(record => ({
+            username: record.username,
+            date: record.date,
+            weight: record.weight,
+            fat_pctg: record.fat_pctg,
+            fat_mass: record.fat_mass,
+        }));
 
         return {
             statusCode: 200,
-            body: JSON.stringify(userStat),
+            body: JSON.stringify(userStats),
         };
     } catch (err) {
         console.error('Error fetching user data:', err);

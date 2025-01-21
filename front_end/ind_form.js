@@ -41,7 +41,6 @@ window.onload = async (event) => {
 async function showUserStat(event, fetch_path, token) {
     try {
         let data = "";
-        let fetch_id = "";
 
         const response = await fetch(fetch_path, {
             method: 'GET',
@@ -53,19 +52,62 @@ async function showUserStat(event, fetch_path, token) {
         }); // Send a GET request to the endpoint
 
         if(response.ok){
-            fetch_id = fetch_path.replace("/get-", "");
             data = await response.json();
-            console.log(data);
 
-            const userStat = data;
+            const userStatContainer = document.getElementById("user-stat");
 
-            // Update the UI with the fetched data
-            document.getElementById('weight').innerText = parseFloat(userStat.weight).toFixed(2) + " kg";
-            document.getElementById('fat-pctg').innerText = parseFloat(userStat.fat_pctg).toFixed(2) + "%";
-            document.getElementById('fat-mass').innerText = parseFloat(userStat.fat_mass).toFixed(2) + " kg";
+            const table = document.createElement('table');
+            const headerRow = document.createElement('tr');
+
+            // Create and append header cells for each column
+            const headers = ['Date', 'Weight', 'Fat Percentage', 'Fat Mass'];
+            headers.forEach(header => {
+                const th = document.createElement('th');
+                th.textContent = header;
+                headerRow.appendChild(th);
+            });
+
+            // Append the header row to the table
+            table.appendChild(headerRow);
+
+            // Append the header row to the table
+            data.forEach((entry) => {
+                const row = document.createElement('tr');
+            
+                // Create and append cells for each field
+                const dateCell = document.createElement('td');
+                const date = new Date(entry.date);
+                dateCell.textContent = date.toLocaleDateString(); // Format the date (MM/DD/YYYY format)
+                row.appendChild(dateCell);
+            
+                const weightCell = document.createElement('td');
+                weightCell.textContent = entry.weight; // Assuming 'weight' is a field in your data
+                row.appendChild(weightCell);
+            
+                const fatPercentageCell = document.createElement('td');
+                fatPercentageCell.textContent = `${entry.fat_pctg}%`; // Assuming 'fatPercentage' is a field in your data
+                row.appendChild(fatPercentageCell);
+            
+                const fatMassCell = document.createElement('td');
+                fatMassCell.textContent = parseFloat(entry.fat_mass).toFixed(2); // Assuming 'fatMass' is a field in your data
+                row.appendChild(fatMassCell);
+            
+                // Append the row to the table
+                table.appendChild(row);
+            });
+
+            // Append the table to the leaderboard container
+            userStatContainer.appendChild(table);
+
+            // const userStat = data;
+
+            // // Update the UI with the fetched data
+            // document.getElementById('weight').innerText = parseFloat(userStat.weight).toFixed(2) + " kg";
+            // document.getElementById('fat-pctg').innerText = parseFloat(userStat.fat_pctg).toFixed(2) + "%";
+            // document.getElementById('fat-mass').innerText = parseFloat(userStat.fat_mass).toFixed(2) + " kg";
 
         } else {
-            document.getElementById(fetch_id).innerHTML = 'Error fetching data';
+            document.getElementById("user-stat").innerHTML = 'Error fetching data';
         }
     } catch (error) {
         console.error('Fetch error:', error);

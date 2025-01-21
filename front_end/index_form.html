@@ -83,6 +83,21 @@
       .body-font {
         font-family: Bahnschrift;
       }
+      table {
+          width: 100%;
+          border-collapse: collapse;
+          margin-top: 20px;
+      }
+
+      th, td {
+          padding: 8px;
+          text-align: left;
+          border: 1px solid #ddd;
+      }
+
+      th {
+          background-color: #f2f2f2;
+      }
     </style>
 
     <!-- Background image -->
@@ -119,87 +134,65 @@
 
   <body style="background-color: #061726dc;">
     <div style="height: 10px;"></div>
-    <div class="grid-container">
-      <!-- Records -->
-      <div class="grid-box">
-        <div class="mask mask-bg mask-shadow">
-          <div class="d-flex justify-content-center align-items-center h-100">
-            <h4 class="grid-header" style="margin: 2%">Records</h4>
-          </div>
-        </div>
-        <div class="mask mask-shadow" style="background-color: rgb(245, 215, 133); padding-left: 2%; padding-right: 2%; padding-bottom: 5%; height: 90%">
-          <div style="padding-top: 3%;"></div>
-          <h5 class="body-font"><b>Overall Progress</b></h5>
-          <div style="padding-top: 3%;"></div>
-
-          <div id="user-stat" class="card-container" style="width: 100%;">
-            <!-- Overall Progress: Weight -->
-            <div class="card">
-              <img class="card-img-top" src="https://www.health.com/thmb/i53eXfFOLVSnHut9cFTXhGp3RkE=/2000x0/filters:no_upscale():max_bytes(150000):strip_icc()/weight-scale-AdobeStock_285381693-2000-ffbac73943c246fead5732de6bd1105d.jpeg" alt="Card image">
-              <div class="card-body">
-                <h5 class="card-title body-font" style="margin-bottom: 20px;"><u>Weight</u></h5>
-                <h6 id="weight" class="card-text body-font">-</h6> 
-                <h6 id="weight-change" class="body-font"><b>-</b></h6>
+    <div class="container">
+      <div class="row justify-content-center">
+        <!-- Records -->
+        <div class="col-md-6 col-12">
+          <div class="grid-box">
+            <div class="mask mask-bg mask-shadow">
+              <div class="d-flex justify-content-center align-items-center h-100">
+                <h4 class="grid-header" style="margin: 2%;">Records</h4>
               </div>
             </div>
+            <div class="mask mask-shadow" style="background-color: rgb(245, 215, 133); padding-left: 2%; padding-right: 2%; padding-bottom: 5%; height: 90%">
+              <div style="padding-top: 3%;"></div>
+              <h5 class="body-font"><b>Overall Progress</b></h5>
+              <div style="padding-top: 3%;"></div>
+    
+              <div id="user-stat" style="width: 100%;">
 
-            <!-- Overall Progress: Fat Percentage -->
-            <div class="card">
-              <img class="card-img-top" src="https://media.istockphoto.com/id/1254657413/photo/woman-touching-her-fat-belly.jpg?s=612x612&w=0&k=20&c=MakEHGQTlgYgZCRvUykoHZlHChhsNiJErOgxxVhQl7s=" alt="Card image">
-              <div class="card-body">
-                <h5 class="card-title body-font" style="margin-bottom: 20px;"><u>Fat Percentage</u></h5>
-                <h6 id="fat-pctg" class="card-text body-font">-</h6> 
-                <h6 id="fat-pctg-change" class="body-font"><b>-</b></h6>
               </div>
             </div>
-
-            <!-- Overall Progress: Fat Mass -->
-            <div class="card">
-              <img class="card-img-top" src="https://dims.apnews.com/dims4/default/9f27905/2147483647/strip/true/crop/8640x5760+0+0/resize/1440x960!/format/webp/quality/90/?url=https%3A%2F%2Fassets.apnews.com%2F60%2Fe4%2F85db9f7e637fb8822abc62dce969%2F5ee40361bcbb47fa90e9de92e934fe5b" alt="Card image">
-              <div class="card-body">
-                <h5 class="card-title body-font" style="margin-bottom: 20px;"><u>Fat Mass</u></h5>
-                <h6 id="fat-mass" class="card-text body-font">-</h6>  
-                <h6 id="fat-mass-change" class="body-font"><b>-</b></h6>  
-              </div>
-            </div> 
           </div>
         </div>
-      </div>
-
-      <div class="grid-box">
+    
         <!-- Submission Form -->
-        <div class="mask mask-bg mask-shadow">
-          <div class="d-flex justify-content-center align-items-center h-100">
-            <h4 class="grid-header" style="margin: 2%;">Submission Form</h4>
+        <div class="col-md-6 col-12">
+          <div class="grid-box">
+            <div class="mask mask-bg mask-shadow">
+              <div class="d-flex justify-content-center align-items-center h-100">
+                <h4 class="grid-header" style="margin: 2%;">Submission Form</h4>
+              </div>
+            </div>
+            <form id="weight-entry" class="grid-box mask-shadow" style="background-color: rgb(192, 208, 213); padding-left: 2%; padding-right: 2%; padding-bottom: 5%; height: 90%">
+              <div style="padding-top: 3%;"></div>
+              <h5 class="body-font"><b>Please fill in the following information:</b></h5>
+              <div style="padding-top: 3%;"></div>
+    
+              <!-- Date Input -->
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-left: 25%; margin-right: 25%; margin-bottom: 4%">
+                <label class="body-font" for="date" style="font-size: 100%; text-align: left;">Date:</label>
+                <input class="body-font" type="date" id="date_input" name="date" min="2025-01-01" max="2025-12-31" style="width: 35%; height: 30%; font-size: 90%; padding: 2%; border-radius: 8px;">
+              </div>
+              <!-- Weight Input -->
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-left: 25%; margin-right: 25%; margin-bottom: 4%">
+                <label class="body-font" for="number" style="font-size: 100%; text-align: left;">Weight in kg:</label>
+                <input class="body-font" type="number" id="weight_input" name="number" step="0.01" min="1" style="width: 35%; height: 30%; font-size: 90%; padding: 2%; border-radius: 8px;" placeholder="00.00">
+              </div>
+              <!-- Fat % Input -->
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-left: 25%; margin-right: 25%; margin-bottom: 4%">
+                <label class="body-font" for="number" style="font-size: 100%; text-align: left;">Fat Percentage in %:</label>
+                <input class="body-font" type="number" id="fat_pctg_input" name="number" step="0.01" min="1" style="width: 35%; height: 30%; font-size: 90%; padding: 2%; border-radius: 8px;" placeholder="00.00">
+              </div>
+              <div style="margin: 3%"></div>
+              <!-- Submit Button -->
+              <button type="submit" class="btn btn-primary" style="width: 50%; height: 10%; font-size: 100%; margin: 5%; border-radius: 8px; font-family: Bahnschrift">Submit</button>
+              <div class="body-font" id="message" style="color: red;"></div>
+            </form>
           </div>
         </div>
-        <form id="weight-entry" class="grid-box mask-shadow" style="background-color: rgb(192, 208, 213); padding-left: 2%; padding-right: 2%; padding-bottom: 5%; height: 90%">
-          <div style="padding-top: 3%;"></div>
-          <h5 class="body-font"><b>Please fill in the following information:</b></h5>
-          <div style="padding-top: 3%;"></div>
-
-          <!-- Date Input -->
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-left: 25%; margin-right: 25%; margin-bottom: 4%">
-            <label class="body-font" for="date" style="font-size: 100%; text-align: left;">Date:</label>
-            <input class="body-font" type="date" id="date_input" name="date" min="2025-01-01" max="2025-12-31" style="width: 35%; height: 30%; font-size: 90%; padding: 2%; border-radius: 8px;">
-          </div>
-          <!-- Weight Input -->
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-left: 25%; margin-right: 25%; margin-bottom: 4%">
-            <label class="body-font" for="number" style="font-size: 100%; text-align: left;">Weight in kg:</label>
-            <input class="body-font" type="number" id="weight_input" name="number" step="0.01" min="1" style="width: 35%; height: 30%; font-size: 90%; padding: 2%; border-radius: 8px;" placeholder="00.00">
-          </div>
-          <!-- Fat % Input -->
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-left: 25%; margin-right: 25%; margin-bottom: 4%">
-            <label class="body-font" for="number" style="font-size: 100%; text-align: left;">Fat Percentage in %:</label>
-            <input class="body-font" type="number" id="fat_pctg_input" name="number" step="0.01" min="1" style="width: 35%; height: 30%; font-size: 90%; padding: 2%; border-radius: 8px;" placeholder="00.00">
-          </div>
-          <div style="margin: 3%"></div>
-          <!-- Submit Button -->
-          <button type="submit" class="btn btn-primary" style="width: 50%; height: 10%; font-size: 100%; margin: 5%; border-radius: 8px; font-family: Bahnschrift">Submit</button>
-          <div class="body-font" id="message" style="color: red;"></div>
-        </form>
       </div>
-    </div>
+    </div>    
     
     <div style="height: 20px;"></div>
     <p class="mb-0" style="margin-top: 5px; font-family: Avenir Next Condensed; text-align: center; color: antiquewhite;">-&nbsp;APH Wellness Committee&nbsp;-</p>
