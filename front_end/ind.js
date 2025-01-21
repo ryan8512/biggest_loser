@@ -69,15 +69,27 @@ async function showLeaderboard(event, fetch_path){
 
             // Normalize the bar width based on the first entry
             const maxFatLoss = data[0].fatLossPercentage; // Get the first entry's fat loss percentage
-            const normalizedWidth = (entry.fatLossPercentage / maxFatLoss) * 100; // Normalize width
-            bar.style.width = `${normalizedWidth}%`; // Set the normalized width
-            
-            if(fetch_id === 'weekly-leaderboard'){
-                bar.style.backgroundColor = `hsl(210, 100%, ${20 + index * 5}%)`; // Change the color based on index
-            }else{
-                bar.style.backgroundColor = `hsl(30, 60%, ${20 + index * 5}%)`; // Change the color based on index
+            let normalizedWidth = (entry.fatLossPercentage / maxFatLoss) * 100; // Normalize width
+            if(normalizedWidth < 0){
+                normalizedWidth = -normalizedWidth; //Set as positive
+                if(normalizedWidth>100){
+                    normalizedWidth = 100; //Cap it
+                }
+                bar.style.width = `${normalizedWidth}%`; // Set the normalized width
+                if(fetch_id === 'weekly-leaderboard'){
+                    bar.style.backgroundColor = `hsl(0, 40%, ${10 + index * 2}%)`; // Change the color based on index
+                }else{
+                    bar.style.backgroundColor = `hsl(0, 40%, ${10 + index * 2}%)`; // Change the color based on index
+                }
             }
-            
+            else{
+                bar.style.width = `${normalizedWidth}%`; // Set the normalized width
+                if(fetch_id === 'weekly-leaderboard'){
+                    bar.style.backgroundColor = `hsl(210, 100%, ${10 + index * 2}%)`; // Change the color based on index
+                }else{
+                    bar.style.backgroundColor = `hsl(30, 60%, ${10 + index * 2}%)`; // Change the color based on index
+                }
+            }            
             // Append the label and bar to the bar container
             barContainer.appendChild(label);
             barContainer.appendChild(bar);
