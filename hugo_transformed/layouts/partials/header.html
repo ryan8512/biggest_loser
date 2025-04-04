@@ -1,0 +1,48 @@
+<!-- Background image -->
+<div
+  class="p-5 text-center bg-image"
+  style="
+    background-image: url('https://cdn.pixabay.com/photo/2024/03/01/12/19/ai-generated-8606430_1280.jpg');
+    height: 350px;
+    background-position: center top -210px;
+    background-size: cover;
+  ">
+  <!-- Header -->
+  <div class="mask mask-bg">
+    <div id="logout-container" style="position: absolute; top: 4%; right: 6%; padding-top: 2%; display: none;">
+      <button type="submit" id="logout_button" class="btn btn-primary" style="border-radius: 20px; font-family: Bahnschrift">Logout</button>
+    </div>
+    <div class="container centered-container">
+      <div class="text-white">
+        <div style="padding-top: 5%;"></div>
+        <h1 class="mb-0 header-font" style="padding-top: 3%; color: antiquewhite;"><b>APH Biggest Loser</b></h1>
+        <h2 class="mb-0 header-font" style="padding-top: 3%; color: antiquewhite; text-align: center;">2025</h2>
+        <div style="padding-top: 5%;"></div>
+      </div>
+    </div>
+    <div style="height: 30px;"></div>
+
+    <div id="user-info" style="display: none;">
+      <h6 class="body-font" style="color: antiquewhite; text-align: center;">You are logged in as:</h6>
+      <h4 id="username_id" style="font-family: Bookman Old Style; color: rgb(252, 209, 103); margin-top: 0; text-align: center;"><!--modify_username--></h4> 
+    </div>
+    
+    <div id="login-form">
+      <!-- Username field and submit button -->
+      <div class="container centered-container">
+        <form method="POST" id="usernameForm">
+          <div class="d-flex mb-3 ms-5 me-5;" style="max-width: 80%;">
+            <div class="form-floating me-2">
+              <input type="text" class="form-control" id="username" placeholder="Enter your username" style="width: 100%; border-radius: 20px; font-family: Bahnschrift; font-size: 80%"/>
+              <label for="username" style="font-family: Bahnschrift; font-size: 80%">Username</label>
+            </div>
+            <button type="submit" class="btn btn-primary" style="border-radius: 20px; font-family: Bahnschrift; font-size: 80%">Submit</button>
+          </div>
+        </form>
+      </div>
+      <div id="message" style="color: red;"></div>
+    </div>
+    
+    <div style="padding-top: 2%;"></div>
+  </div>
+</div> 

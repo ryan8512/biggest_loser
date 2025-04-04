@@ -1,0 +1,69 @@
+{{ define "main" }}
+  {{ partial "header.html" . }}
+
+  <div style="height: 10px;"></div>
+  <div class="container">
+    <div class="row justify-content-center">
+      <!-- Records -->
+      <div class="col-md-6 col-12">
+        <div class="grid-box">
+          <div class="mask mask-bg mask-shadow">
+            <div class="d-flex justify-content-center align-items-center h-100">
+              <h4 class="grid-header" style="margin: 2%;">Records</h4>
+            </div>
+          </div>
+          <div class="mask mask-shadow" style="background-color: rgb(245, 215, 133); padding-left: 2%; padding-right: 2%; padding-bottom: 5%; height: 90%">
+            <div style="padding-top: 3%;"></div>
+            <h5 class="body-font"><b>Overall Progress</b></h5>
+            <div style="padding-top: 3%;"></div>
+            <div id="user-stat" style="width: 100%;"></div>
+          </div>
+        </div>
+      </div>
+  
+      <!-- Submission Form -->
+      <div class="col-md-6 col-12">
+        <div class="grid-box">
+          <div class="mask mask-bg mask-shadow">
+            <div class="d-flex justify-content-center align-items-center h-100">
+              <h4 class="grid-header" style="margin: 2%;">Submission Form</h4>
+            </div>
+          </div>
+          <form id="weight-entry" class="grid-box mask-shadow" style="background-color: rgb(192, 208, 213); padding-left: 2%; padding-right: 2%; padding-bottom: 5%; height: 90%">
+            <div style="padding-top: 3%;"></div>
+            <h5 class="body-font"><b>Please fill in the following information:</b></h5>
+            <div style="padding-top: 3%;"></div>
+  
+            <!-- Date Input -->
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-left: 25%; margin-right: 25%; margin-bottom: 4%">
+              <label class="body-font" for="date" style="font-size: 100%; text-align: left;">Date:</label>
+              <input class="body-font" type="date" id="date_input" name="date" min="2025-01-01" max="2025-12-31" style="width: 35%; height: 30%; font-size: 90%; padding: 2%; border-radius: 8px;">
+            </div>
+            <!-- Weight Input -->
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-left: 25%; margin-right: 25%; margin-bottom: 4%">
+              <label class="body-font" for="number" style="font-size: 100%; text-align: left;">Weight in kg:</label>
+              <input class="body-font" type="number" id="weight_input" name="number" step="0.01" min="1" style="width: 35%; height: 30%; font-size: 90%; padding: 2%; border-radius: 8px;" placeholder="00.00">
+            </div>
+            <!-- Fat % Input -->
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-left: 25%; margin-right: 25%; margin-bottom: 4%">
+              <label class="body-font" for="number" style="font-size: 100%; text-align: left;">Fat Percentage in %:</label>
+              <input class="body-font" type="number" id="fat_pctg_input" name="number" step="0.01" min="1" style="width: 35%; height: 30%; font-size: 90%; padding: 2%; border-radius: 8px;" placeholder="00.00">
+            </div>
+            <div style="margin: 3%"></div>
+            <!-- Submit Button -->
+            <button type="submit" class="btn btn-primary" style="width: 50%; height: 10%; font-size: 100%; margin: 5%; border-radius: 8px; font-family: Bahnschrift">Submit</button>
+            <div class="body-font" id="message" style="color: red;"></div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>    
+  
+  <div style="height: 20px;"></div>
+  {{ partial "footer.html" . }}
+{{ end }}
+
+{{ define "scripts" }}
+<script src="https://cdn.jsdelivr.net/npm/jwt-decode@3.1.2/build/jwt-decode.min.js"></script>
+<script src="/js/form.js"></script>
+{{ end }} 
