@@ -54,45 +54,64 @@ async function showLeaderboard(event, fetch_path){
         
         // Get the container where the leaderboard should be displayed
         const leaderboardContainer = document.getElementById(fetch_id);
+        
+        const medalColors = [
+            { r: 254, g: 216, b: 0 },
+            { r: 175, g: 174, b: 168 },
+            { r: 210, g: 151, b: 89 }
+        ];
         // Iterate through the data and dynamically create bars
         data.forEach((entry, index) => {
+            // Create the outer bar container
             const barContainer = document.createElement('div');
             barContainer.classList.add('bar-container');
-            // Create the label (name of the person)
+
+            // Create the circle for the fat percentage and set background color and text
+            const circle = document.createElement('div');
+            circle.classList.add('circle');
+            if(entry.fatLossPercentage>=0){
+                circle.style.backgroundColor = `hsl(166, 97%, ${20 + (index * 3)}%)`; // Adjust the color based on fat percentage
+            }else{
+                circle.style.backgroundColor = `hsl(0, 49%, ${56 - (index * 2)}%)`; // Adjust the color based on fat percentage
+            }
+            
+            const percentageText = document.createElement('h4');
+            percentageText.innerHTML = `<b>${entry.fatLossPercentage.toFixed(1)}%</b>`;
+            circle.appendChild(percentageText);
+
+            // Create the label (person's name)
             const label = document.createElement('div');
             label.classList.add('label');
-            label.textContent = entry.name; // Assuming 'name' is a field in your data
-            // Create the bar (fat percentage loss)
-            const bar = document.createElement('div');
-            bar.classList.add('bar');
-            bar.textContent = `${entry.fatLossPercentage}%`; // Assuming 'fatLossPercentage' is a field in your data
+            const personName = document.createElement('span');
+            personName.textContent = entry.name; // Assuming 'name' is a field in your data
+            label.appendChild(personName);
 
-            // Normalize the bar width based on the first entry
-            const maxFatLoss = data[0].fatLossPercentage; // Get the first entry's fat loss percentage
-            let normalizedWidth = (entry.fatLossPercentage / maxFatLoss) * 100; // Normalize width
-            if(normalizedWidth < 0){
-                normalizedWidth = -normalizedWidth; //Set as positive
-                if(normalizedWidth>100){
-                    normalizedWidth = 100; //Cap it
-                }
-                bar.style.width = `${normalizedWidth}%`; // Set the normalized width
-                if(fetch_id === 'weekly-leaderboard'){
-                    bar.style.backgroundColor = `hsl(0, 40%, ${10 + index * 2}%)`; // Change the color based on index
-                }else{
-                    bar.style.backgroundColor = `hsl(0, 40%, ${10 + index * 2}%)`; // Change the color based on index
-                }
+            // Create the medal SVG (ranking icon)
+            if(index<3) {
+                const { r, g, b } = medalColors[index]; // Destructuring the color object
+                const medalSvg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+                medalSvg.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+                medalSvg.setAttribute('width', '30');
+                medalSvg.setAttribute('height', '30');
+                medalSvg.setAttribute('fill', 'currentColor');
+                medalSvg.setAttribute('class', 'bi bi-award-fill');
+                medalSvg.setAttribute('viewBox', '0 0 16 16');
+                medalSvg.style.color = `rgba(${r}, ${g}, ${b}, 0.734)`;
+                const path1 = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                path1.setAttribute('d', 'm8 0 1.669.864 1.858.282.842 1.68 1.337 1.32L13.4 6l.306 1.854-1.337 1.32-.842 1.68-1.858.282L8 12l-1.669-.864-1.858-.282-.842-1.68-1.337-1.32L2.6 6l-.306-1.854 1.337-1.32.842-1.68L6.331.864z');
+                const path2 = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                path2.setAttribute('d', 'M4 11.794V16l4-1 4 1v-4.206l-2.018.306L8 13.126 6.018 12.1z');
+                medalSvg.appendChild(path1);
+                medalSvg.appendChild(path2);
+                
+                // Add the medal to the label
+                label.appendChild(medalSvg);
             }
-            else{
-                bar.style.width = `${normalizedWidth}%`; // Set the normalized width
-                if(fetch_id === 'weekly-leaderboard'){
-                    bar.style.backgroundColor = `hsl(210, 100%, ${10 + index * 2}%)`; // Change the color based on index
-                }else{
-                    bar.style.backgroundColor = `hsl(30, 60%, ${10 + index * 2}%)`; // Change the color based on index
-                }
-            }            
-            // Append the label and bar to the bar container
+
+            // Append the circle and label to the bar container
+            barContainer.appendChild(circle);
             barContainer.appendChild(label);
-            barContainer.appendChild(bar);
+
             // Append the bar container to the leaderboard
             leaderboardContainer.appendChild(barContainer);
         });

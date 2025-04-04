@@ -166,7 +166,7 @@ const checkWeight = async (event) => {
             };
         }
 
-        const formattedDate = moment(date, 'YYYY-MM-DD').startOf('week').toDate();
+        const formattedDate = moment(date, 'YYYY-MM-DD').toDate();
         const fat_mass = weight * (fat_pctg / 100);
 
         // Save data to DynamoDB
@@ -293,7 +293,7 @@ const getOverallLeaderboard = async () => {
         mergedDataScan.Count = mergedData.length;
         mergedDataScan.ScannedCount = mergedData.length;
 
-        return leaderboard_logic(mergedDataScan,initialWeekData);
+        return leaderboard_logic(mergedDataScan,initialWeekData,0);
 
     } catch (err) {
         console.error('Error fetching data:', err);
@@ -314,6 +314,10 @@ const getWeeklyLeaderboard = async () => {
         const startOfLastWeek = lastWeekDate.clone().startOf('week').toISOString();  // Start of last week
         const endOfLastWeek = lastWeekDate.clone().endOf('week').toISOString();  // End of last week
 
+        const initialWeekDate = moment("2025-01-08", "YYYY-MM-DD");
+        const startOfInitialWeek = initialWeekDate.clone().startOf('week').toISOString();  // Start of initial week
+        const endOfInitialWeek = initialWeekDate.clone().endOf('week').toISOString();  // End of initial week
+
         const paramsCurrent = {
             TableName: 'Weights',
             FilterExpression: '#date >= :currentStartOfWeek AND #date <= :currentEndOfWeek',
@@ -333,7 +337,7 @@ const getWeeklyLeaderboard = async () => {
                 '#date': 'date',  // Map #date to the reserved word 'date'
             },
             ExpressionAttributeValues: {
-                ':lastWeekStartOfWeek': startOfLastWeek,
+                ':lastWeekStartOfWeek': startOfInitialWeek,
                 ':lastWeekEndOfWeek': endOfLastWeek,
             },
         };
@@ -342,7 +346,7 @@ const getWeeklyLeaderboard = async () => {
         const currentWeekData = await dynamoDb.scan(paramsCurrent).promise();
         const lastWeekData = await dynamoDb.scan(paramsLastWeek).promise();
 
-        return leaderboard_logic(currentWeekData,lastWeekData);
+        return leaderboard_logic(currentWeekData,lastWeekData,1);
 
     } catch (err) {
         console.error('Error fetching data:', err);
@@ -353,7 +357,7 @@ const getWeeklyLeaderboard = async () => {
     }
 };
 
-function leaderboard_logic(currentWeekData,lastWeekData){
+function leaderboard_logic(currentWeekData,lastWeekData, mode){
     // Ensure that Items exist in both data sets
     if (!currentWeekData.Items || !currentWeekData.Items.length || !lastWeekData.Items || !lastWeekData.Items.length) {
         return { statusCode: 200, body: JSON.stringify([]) };
@@ -382,8 +386,42 @@ function leaderboard_logic(currentWeekData,lastWeekData){
         }));
     };
 
+    const groupAndMinFatMass = (data) => {
+        // Ensure data is an array
+        if (!Array.isArray(data)) {
+            console.error('Invalid data format', data);
+            return [];
+        }
+    
+        const grouped = data.reduce((acc, user) => {
+            if (!acc[user.username]) {
+                acc[user.username] = { minFatMass: Infinity }; // Initialize to Infinity to find the minimum
+            }
+            // Update minFatMass to the smaller value between the current min and the user's fat_mass
+            acc[user.username].minFatMass = Math.min(acc[user.username].minFatMass, user.fat_mass);
+            return acc;
+        }, {});
+    
+        return Object.entries(grouped).map(([username, { minFatMass }]) => ({
+            username,
+            avgFatMass: parseFloat(minFatMass).toFixed(2),
+        }));
+    };
+
     const avgCurrentWeekData = groupAndAverage(currentWeekData.Items);  // Use Items here
-    const avgLastWeekData = groupAndAverage(lastWeekData.Items);        // Use Items here
+    let avgLastWeekData;
+    if(mode == 0){
+        avgLastWeekData = groupAndAverage(lastWeekData.Items);        // Use Items here
+    }
+    else{
+        avgLastWeekData = groupAndMinFatMass(lastWeekData.Items); // Take the minimum of the data
+        //console.log("Debug");
+        //avgLastWeekData.forEach(item => {
+        //    console.log(item.username);  // Now it will log each username
+        //    console.log(item.avgFatMass);  // Now it will log each avgFatMass
+        //});
+    }
+    
 
     //Implement caching of username to name
     const usernameToName = {
