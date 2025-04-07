@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Submit Steps - Biggest Loser 2025</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"/>
+    <link rel="stylesheet" href="/css/main.css">
+    
+  </head>
+  <body style="background-color: #061726dc;">
+    
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Submit Steps - Step Challenge</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f8f9fa;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        .form-container {
+            max-width: 600px;
+            margin: 2rem auto;
+            padding: 2rem;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        .main-content {
+            flex: 1;
+            padding: 2rem 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="main-content">
+        <div class="container">
+            <div class="form-container">
+                <h1 class="text-center mb-4">Submit Your Steps</h1>
+                <form id="stepForm">
+                    <div class="mb-3">
+                        <label for="date" class="form-label">Date</label>
+                        <input type="date" class="form-control" id="date" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="steps" class="form-label">Number of Steps</label>
+                        <input type="number" class="form-control" id="steps" required min="0">
+                    </div>
+                    <div class="mb-3">
+                        <label for="activeMinutes" class="form-label">Active Minutes</label>
+                        <input type="number" class="form-control" id="activeMinutes" required min="0">
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100">Submit</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <footer class="bg-light py-4 mt-auto">
+        <div class="container text-center">
+            <p class="mb-0 text-muted">© 2024 Fitness Challenges. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jwt-decode/build/jwt-decode.min.js"></script>
+    <script>
+        document.getElementById('stepForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const token = localStorage.getItem('token');
+            if (!token) {
+                alert('Please log in first');
+                return;
+            }
+
+            const formData = {
+                date: document.getElementById('date').value,
+                steps: parseInt(document.getElementById('steps').value),
+                activeMinutes: parseInt(document.getElementById('activeMinutes').value)
+            };
+
+            try {
+                const response = await fetch('http://localhost:3000/api/steps', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(formData)
+                });
+
+                if (response.ok) {
+                    alert('Steps submitted successfully!');
+                    window.location.href = '/step-challenge/';
+                } else {
+                    const error = await response.json();
+                    alert(error.message || 'Failed to submit steps');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Failed to submit steps');
+            }
+        });
+    </script>
+</body>
+</html>
+
+    
+  </body>
+</html> 

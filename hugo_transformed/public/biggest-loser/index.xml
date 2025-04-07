@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Biggest Loser Challenge on Biggest Loser 2025</title>
+    <link>/biggest-loser/</link>
+    <description>Recent content in Biggest Loser Challenge on Biggest Loser 2025</description>
+    <generator>Hugo</generator>
+    <language>en-us</language>
+    <atom:link href="/biggest-loser/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Submit Weight</title>
+      <link>/biggest-loser/form/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>/biggest-loser/form/</guid>
+      <description></description>
+    </item>
+  </channel>
+</rss>

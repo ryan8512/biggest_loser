@@ -1,0 +1,306 @@
+{{ define "main" }}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>{{ .Title }}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"/>
+    <style>
+      .centered-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+      .mask-bg {
+        background-color: rgba(0, 0, 0, 0.6);
+      }
+      .mask-shadow {
+        box-shadow: 10px 10px 15px rgba(25, 24, 24, 0.824);
+      }
+      .divs-container {
+        display: flex;
+        justify-content: space-between;
+      }
+      .box {
+        width: 49%;
+        padding: 30px;
+        text-align: center;
+      }
+      .bar-container {
+        width: 100%;
+        align-items: center;
+        display: flex;
+        gap: 10px;
+        position: relative;
+        justify-content: center;
+      }
+      .label {
+        width: 50%;
+        margin-top: 20px;
+        line-height: 40px;
+        text-align: left;
+        font-weight: bold;
+        font-family: Bahnschrift;
+        border-radius: 8px;
+        background-color: white;
+        border-bottom: 1.5px dotted rgb(21, 21, 29);
+        margin-left: -20px;
+        padding-left: 60px;
+        text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.2);
+        justify-content: space-between;
+        display: flex;
+        padding: 5px 30px;
+      }
+      .header-font {
+        font-family: Rockwell;
+      }
+      .body-font {
+        font-family: Bahnschrift;
+      }
+      .circle {
+        width: 65px;
+        height: 65px;
+        border-radius: 50%;
+        position: relative;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        border: 2px solid rgb(189, 162, 94);
+        box-shadow: 5px 5px 15px rgba(0, 0, 0, 0.3);
+        font-family: Bahnschrift;
+        color: rgb(255, 255, 255);
+        padding-top: 7px;
+      }
+    </style>
+</head>
+<body style="background-color: #061726dc;">
+    <!-- Background image -->
+    <div
+    class="p-5 text-center bg-image"
+    style="
+      background-image: url('https://cdn.pixabay.com/photo/2024/03/01/12/19/ai-generated-8606430_1280.jpg');
+      height: 350px;
+      background-position: center top -210px;
+      background-size: cover;
+    ">
+    
+      <!-- Header -->
+      <div class="mask mask-bg">
+        <div class="container centered-container">
+          <div class="text-white">
+            <div style="padding-top: 5%;"></div>
+            <h1 class="mb-0 header-font" style="padding-top: 3%; color: antiquewhite;"><b>APH Step Challenge</b></h1>
+            <h2 class="mb-0 header-font" style="padding-top: 3%; color: antiquewhite; text-align: center;">2025</h2>
+            <div style="padding-top: 5%;"></div>
+          </div>
+        </div>
+        <div style="height: 30px;"></div>
+
+        <!-- Username field and submit button -->
+        <div class="container centered-container">
+          <form method="POST" id="usernameForm">
+            <div class="d-flex mb-3 ms-5 me-5;" style="max-width: 80%;">
+              <div class="form-floating me-2">
+                <input type="text" class="form-control" id="username" placeholder="Enter your username" style="width: 100%; border-radius: 20px; font-family: Bahnschrift; font-size: 80%"/>
+                <label for="username" style="font-family: Bahnschrift; font-size: 80%">Username</label>
+              </div>
+              <button type="submit" class="btn btn-primary" style="border-radius: 20px; font-family: Bahnschrift; font-size: 80%">Submit</button>
+            </div>
+          </form>
+        </div>
+        <div id="message" style="color: red;"></div>
+        <div style="padding-top: 2%;"></div>
+      </div>
+    </div>
+
+    <!-- Leaderboard Header -->
+    <div class="mask mask-bg">
+      <div class="d-flex justify-content-center align-items-center h-100">
+        <div class="text-white" style="text-align: center;">
+          <div style="padding-top: 5%;"></div>
+          <svg xmlns="http://www.w3.org/2000/svg" width="3%" height="3%" fill="currentColor" class="bi bi-trophy-fill" viewBox="0 0 16 16" style="display: inline-block; color: antiquewhite;">
+            <path d="M2.5.5A.5.5 0 0 1 3 0h10a.5.5 0 0 1 .5.5q0 .807-.034 1.536a3 3 0 1 1-1.133 5.89c-.79 1.865-1.878 2.777-2.833 3.011v2.173l1.425.356c.194.048.377.135.537.255L13.3 15.1a.5.5 0 0 1-.3.9H3a.5.5 0 0 1-.3-.9l1.838-1.379c.16-.12.343-.207.537-.255L6.5 13.11v-2.173c-.955-.234-2.043-1.146-2.833-3.012a3 3 0 1 1-1.132-5.89A33 33 0 0 1 2.5.5m.099 2.54a2 2 0 0 0 .72 3.935c-.333-1.05-.588-2.346-.72-3.935m10.083 3.935a2 2 0 0 0 .72-3.935c-.133 1.59-.388 2.885-.72 3.935"/>
+          </svg>
+          <h4 class="mb-0 header-font" style="margin-top: 5px; display: inline-block; color: rgb(244, 230, 213);"><b>&nbsp;Leaderboard&nbsp;</b></h4>
+          <svg xmlns="http://www.w3.org/2000/svg" width="3%" height="3%" fill="currentColor" class="bi bi-trophy-fill" viewBox="0 0 16 16" style="display: inline-block; color: antiquewhite;">
+            <path d="M2.5.5A.5.5 0 0 1 3 0h10a.5.5 0 0 1 .5.5q0 .807-.034 1.536a3 3 0 1 1-1.133 5.89c-.79 1.865-1.878 2.777-2.833 3.011v2.173l1.425.356c.194.048.377.135.537.255L13.3 15.1a.5.5 0 0 1-.3.9H3a.5.5 0 0 1-.3-.9l1.838-1.379c.16-.12.343-.207.537-.255L6.5 13.11v-2.173c-.955-.234-2.043-1.146-2.833-3.012a3 3 0 1 1-1.132-5.89A33 33 0 0 1 2.5.5m.099 2.54a2 2 0 0 0 .72 3.935c-.333-1.05-.588-2.346-.72-3.935m10.083 3.935a2 2 0 0 0 .72-3.935c-.133 1.59-.388 2.885-.72 3.935"/>
+          </svg>
+          <p class="body-font" style="color: grey;"><i><strong>Note: </strong>Leaderboard is updated with real-time data!</i></p>
+          <div style="padding-top: 5%;"></div>
+        </div>
+      </div>
+    </div>
+    <div style="padding-top: 2%;"></div>
+    <div class="divs-container">
+      <div id="overall-leaderboard" class="box mask-shadow" style="background-color: rgb(224, 208, 176);">
+        <h5 class="header-font"><b>Overall Ranking</b></h5>
+        <h6 class="header-font">By Steps</h6>
+        <div style="padding-top: 2%;"></div>
+      </div>
+      <!-- Weekly Leaderboard Ranking-->
+      <div id="weekly-leaderboard" class="box mask-shadow" style="background-color: rgb(170, 207, 214);">
+        <h5 class="header-font"><b>Weekly Ranking</b></h5> 
+        <h6 class="header-font">By Steps</h6>
+        <div style="padding-top: 2%;"></div>
+      </div>
+    </div>
+    <p class="mb-0" style="padding-top: 5%; font-family: Avenir Next Condensed; text-align: center; color: antiquewhite;">-&nbsp;APH Wellness Committee&nbsp;-</p>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        let username = "";
+        const apiBaseUrl = "https://r58t6xl40g.execute-api.us-east-1.amazonaws.com/Prod"; // API URL
+
+        document.getElementById('usernameForm').addEventListener('submit', function(event) {
+            event.preventDefault(); // Prevent the form from submitting normally
+
+            username = document.getElementById('username').value.trim();
+
+            // Simple validation to check if username is empty
+            if (!username) {
+                document.getElementById('message').textContent = "Username cannot be empty!";
+                return;
+            }
+            // Call the API to check if the username exists
+            checkUsernameExistence(username);
+        });
+
+        window.onload = async (event) => {
+            // Call function to fetch and display the leaderboard
+            await showLeaderboard(event, '/get-weekly-leaderboard');
+            await showLeaderboard(event, '/get-overall-leaderboard');
+        };
+
+        async function showLeaderboard(event, fetch_path){
+            try {
+                let data = "";
+                let fetch_id = "";
+                
+                const response = await fetch(apiBaseUrl + fetch_path, {
+                    method: 'GET', 
+                    mode: 'cors', 
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                }); 
+                
+                if(response.ok){
+                    fetch_id = fetch_path.replace("/get-", "");
+                    data = await response.json();
+                } else {
+                    document.getElementById(fetch_id).innerHTML = 'Error fetching data';
+                }
+                
+                // Get the container where the leaderboard should be displayed
+                const leaderboardContainer = document.getElementById(fetch_id);
+                
+                const medalColors = [
+                    { r: 254, g: 216, b: 0 },
+                    { r: 175, g: 174, b: 168 },
+                    { r: 210, g: 151, b: 89 }
+                ];
+                
+                // Iterate through the data and dynamically create bars
+                data.forEach((entry, index) => {
+                    // Create the outer bar container
+                    const barContainer = document.createElement('div');
+                    barContainer.classList.add('bar-container');
+
+                    // Create the circle for the steps and set background color and text
+                    const circle = document.createElement('div');
+                    circle.classList.add('circle');
+                    circle.style.backgroundColor = `hsl(166, 97%, ${20 + (index * 3)}%)`; // Adjust the color based on steps
+                    
+                    const stepsText = document.createElement('h4');
+                    stepsText.innerHTML = `<b>${entry.steps}</b>`;
+                    circle.appendChild(stepsText);
+
+                    // Create the label (person's name)
+                    const label = document.createElement('div');
+                    label.classList.add('label');
+                    const personName = document.createElement('span');
+                    personName.textContent = entry.name; // Assuming 'name' is a field in your data
+                    label.appendChild(personName);
+
+                    // Create the medal SVG (ranking icon)
+                    if(index < 3) {
+                        const { r, g, b } = medalColors[index]; // Destructuring the color object
+                        const medalSvg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+                        medalSvg.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+                        medalSvg.setAttribute('width', '30');
+                        medalSvg.setAttribute('height', '30');
+                        medalSvg.setAttribute('fill', 'currentColor');
+                        medalSvg.setAttribute('class', 'bi bi-award-fill');
+                        medalSvg.setAttribute('viewBox', '0 0 16 16');
+                        medalSvg.style.color = `rgba(${r}, ${g}, ${b}, 0.734)`;
+                        const path1 = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                        path1.setAttribute('d', 'm8 0 1.669.864 1.858.282.842 1.68 1.337 1.32L13.4 6l.306 1.854-1.337 1.32-.842 1.68-1.858.282L8 12l-1.669-.864-1.858-.282-.842-1.68-1.337-1.32L2.6 6l-.306-1.854 1.337-1.32.842-1.68L6.331.864z');
+                        const path2 = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                        path2.setAttribute('d', 'M4 11.794V16l4-1 4 1v-4.206l-2.018.306L8 13.126 6.018 12.1z');
+                        medalSvg.appendChild(path1);
+                        medalSvg.appendChild(path2);
+                        
+                        // Add the medal to the label
+                        label.appendChild(medalSvg);
+                    }
+
+                    // Append the circle and label to the bar container
+                    barContainer.appendChild(circle);
+                    barContainer.appendChild(label);
+
+                    // Append the bar container to the leaderboard
+                    leaderboardContainer.appendChild(barContainer);
+                });
+            } catch (error) {
+                console.error('Fetch error:', error);
+                document.getElementById(fetch_id).innerHTML = 'Fetch error occurred';
+            }
+        }
+
+        async function checkUsernameExistence(username) {
+            // Use the full API URL here as well
+            const apiEndpoint = `${apiBaseUrl}/check-username`;
+            const apiEndpoint2 = `${apiBaseUrl}/check-index-form`;
+
+            try {
+                const response = await fetch(apiEndpoint, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ username }),
+                    mode:'cors'
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    localStorage.setItem('authToken', data.token);
+                    const responseForm = await fetch(apiEndpoint2, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ token: data.token }),
+                        mode:'cors'
+                    });
+
+                    if(responseForm.ok){
+                        const data = await responseForm.json();
+                        window.location.href = data.url; // Redirect to the presigned URL
+                    }else{
+                        document.getElementById('message').textContent = "Token invalid or expired"
+                    }
+
+                } else {
+                    const error = await response.json();
+                    document.getElementById('message').textContent = error.message;
+                }
+            } catch (error) {
+                document.getElementById('message').textContent = 'An error occurred';
+            }
+        }
+    </script>
+</body>
+</html>
+{{ end }} 
