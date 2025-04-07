@@ -3,9 +3,11 @@ const jwt = require('jsonwebtoken');
 const AWS = require('aws-sdk');
 
 const isLocal = process.env.AWS_SAM_LOCAL === 'true';
+const BUCKET_NAME = 'biggestloser8152-steps'; // S3 bucket for steps photos
 
 let dynamoDb = null;
 let dynamoDbService = null;
+const s3 = new AWS.S3();
 
 if(isLocal){
     dynamoDb = new AWS.DynamoDB.DocumentClient({
@@ -82,6 +84,10 @@ exports.handler = async (event) => {
             return addCORSHeaders(await submitSteps(event));
         }
 
+        if (httpMethod === 'POST' && path === '/submit_photo_proof') {
+            return addCORSHeaders(await submitPhotoProof(event));
+        }
+
         if (httpMethod === 'GET' && path === '/overall_steps_leaderboard') {
             return addCORSHeaders(await getOverallStepsLeaderboard(event));
         }
@@ -142,23 +148,30 @@ const loginSteps = async (event) => {
 const submitSteps = async (event) => {
     try {
         const user = verifyToken(event);
-        const { date, steps } = JSON.parse(event.body || '{}');
+        const { date, endDate, steps, type } = JSON.parse(event.body || '{}');
 
-        if (!date || !steps) {
+        if (!date || !steps || !type) {
             return {
                 statusCode: 400,
-                body: JSON.stringify({ message: 'Date and steps are required' }),
+                body: JSON.stringify({ message: 'Date, steps, and type are required' }),
             };
         }
 
-        const formattedDate = moment(date, 'YYYY-MM-DD').toDate();
+        if (type === 'weekly' && !endDate) {
+            return {
+                statusCode: 400,
+                body: JSON.stringify({ message: 'End date is required for weekly submissions' }),
+            };
+        }
 
         const params = {
             TableName: 'Steps',
             Item: {
                 username: user.username,
-                date: formattedDate.toISOString(),
+                date: date,
                 steps: parseInt(steps),
+                type: type,
+                ...(type === 'weekly' && { endDate: endDate })
             },
         };
 
@@ -184,6 +197,58 @@ const submitSteps = async (event) => {
         return {
             statusCode: 500,
             body: JSON.stringify({ message: 'Internal Server Error' }),
+        };
+    }
+};
+
+const submitPhotoProof = async (event) => {
+    try {
+        const user = verifyToken(event);
+        
+        // Parse multipart form data
+        const boundary = event.headers['Content-Type'].split('=')[1];
+        const parts = event.body.split(boundary);
+        const photoData = parts.find(part => part.includes('name="photo"'));
+        
+        if (!photoData) {
+            return {
+                statusCode: 400,
+                body: JSON.stringify({ message: 'No photo provided' }),
+            };
+        }
+
+        // Extract file content and metadata
+        const fileContent = Buffer.from(photoData.split('\r\n\r\n')[1], 'binary');
+        const timestamp = new Date().toISOString();
+        const key = `${user.username}/${timestamp}.jpg`;
+
+        // Upload to S3
+        await s3.putObject({
+            Bucket: BUCKET_NAME,
+            Key: key,
+            Body: fileContent,
+            ContentType: 'image/jpeg'
+        }).promise();
+
+        return {
+            statusCode: 200,
+            body: JSON.stringify({
+                success: true,
+                message: 'Photo uploaded successfully',
+                url: `https://${BUCKET_NAME}.s3.amazonaws.com/${key}`
+            }),
+        };
+    } catch (error) {
+        console.error('Error:', error);
+        if (error.message.includes('Unauthorized')) {
+            return {
+                statusCode: 403,
+                body: JSON.stringify({ message: error.message }),
+            };
+        }
+        return {
+            statusCode: 500,
+            body: JSON.stringify({ message: 'Error uploading photo' }),
         };
     }
 };
@@ -247,17 +312,18 @@ const getWeeklyStepsLeaderboard = async () => {
         const result = await dynamoDb.scan(params).promise();
         const weeklyData = result.Items;
 
-        // Group by username and get maximum steps
-        const userMaxSteps = weeklyData.reduce((acc, item) => {
+        // Group by username and sum steps
+        const userTotals = weeklyData.reduce((acc, item) => {
             const username = item.username;
-            if (!acc[username] || item.steps > acc[username]) {
-                acc[username] = item.steps;
+            if (!acc[username]) {
+                acc[username] = 0;
             }
+            acc[username] += item.steps;
             return acc;
         }, {});
 
-        // Convert to array and sort by maximum steps
-        const leaderboard = Object.entries(userMaxSteps)
+        // Convert to array and sort by total steps
+        const leaderboard = Object.entries(userTotals)
             .map(([username, steps]) => ({ username, steps }))
             .sort((a, b) => b.steps - a.steps)
             .slice(0, 10); // Top 10
@@ -294,7 +360,7 @@ const getUserStepsStats = async (event) => {
         // Calculate total steps
         const total_steps = userData.reduce((sum, item) => sum + item.steps, 0);
 
-        // Calculate weekly steps
+        // Calculate weekly steps (current week)
         const currentDate = moment();
         const startOfWeek = currentDate.clone().startOf('week').toISOString();
         const endOfWeek = currentDate.clone().endOf('week').toISOString();
@@ -303,7 +369,7 @@ const getUserStepsStats = async (event) => {
             .filter(item => item.date >= startOfWeek && item.date <= endOfWeek)
             .reduce((sum, item) => sum + item.steps, 0);
 
-        // Calculate daily average
+        // Calculate daily average (using all entries)
         const daily_average = userData.length > 0 ? Math.round(total_steps / userData.length) : 0;
 
         return {

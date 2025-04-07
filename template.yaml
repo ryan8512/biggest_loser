@@ -7,6 +7,18 @@ Globals:
       AllowHeaders: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token,X-Amz-User-Agent'"
       AllowOrigin: "'*'"
 Resources:
+  # S3 Bucket for Steps Photos
+  StepsPhotoBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: biggestloser8152-steps
+      CorsConfiguration:
+        CorsRules:
+          - AllowedHeaders: ['*']
+            AllowedMethods: [GET, PUT, POST]
+            AllowedOrigins: ['*']
+            MaxAge: 3000
+
   ApiHandler:
     Type: AWS::Serverless::Function
     Properties:
@@ -60,6 +72,8 @@ Resources:
       Policies:
         - DynamoDBCrudPolicy:
             TableName: !Ref Steps
+        - S3CrudPolicy:
+            BucketName: !Ref StepsPhotoBucket
       Events:
         LoginSteps:
           Type: Api
@@ -70,6 +84,11 @@ Resources:
           Type: Api
           Properties:
             Path: /submit_steps
+            Method: post
+        SubmitPhotoProof:
+          Type: Api
+          Properties:
+            Path: /submit_photo_proof
             Method: post
         GetOverallStepsLeaderboard:
           Type: Api
@@ -129,3 +148,6 @@ Outputs:
   StepsTableName:
     Description: "Steps DynamoDB Table Name"
     Value: !Ref Steps
+  StepsPhotoBucketName:
+    Description: "S3 Bucket for Steps Photos"
+    Value: !Ref StepsPhotoBucket

@@ -139,23 +139,8 @@ async function checkUsernameExistence(username) {
         if (response.ok) {
             const data = await response.json();
             localStorage.setItem('authToken', data.token);
-            const responseForm = await fetch(apiEndpoint2, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ token: data.token }),
-                mode:'cors'
-            });
-
-            if(responseForm.ok){
-                const data = await responseForm.json();
-                window.location.href = data.url; // Redirect to the presigned URL
-            }else{
-                document.getElementById('message').textContent = "Token invalid or expired"
-            }
-
-        } else {
+            window.location.href = 'index_form.html'; // Redirect to the presigned URL
+        }else {
             const error = await response.json();
             document.getElementById('message').textContent = error.message;
         }

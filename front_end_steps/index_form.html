@@ -28,12 +28,12 @@
       }
       .grid-container {
         display: grid;
-        grid-template-columns: 1fr 1fr;
+        grid-template-columns: 1fr 1fr 1fr;
         gap: 20px;
         width: 100%;
         height: 100%;
         justify-content: center;
-        align-items: center;
+        align-items: start;
       }
       .grid-box {
         width: 100%;
@@ -58,6 +58,7 @@
         padding: 15px;
         margin-bottom: 15px;
         text-align: center;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
       }
       .stats-card h6 {
         color: #666;
@@ -70,12 +71,38 @@
       .form-section {
         background-color: rgba(255, 255, 255, 0.1);
         border-radius: 8px;
-        padding: 15px;
+        padding: 20px;
         margin-bottom: 20px;
       }
-      .form-section h6 {
+      .form-section h5 {
+        margin-bottom: 20px;
         color: #333;
+      }
+      .input-group {
         margin-bottom: 15px;
+      }
+      .input-group label {
+        margin-bottom: 5px;
+        display: block;
+      }
+      .input-group input {
+        width: 100%;
+        padding: 8px;
+        border-radius: 4px;
+        border: 1px solid #ddd;
+      }
+      .message {
+        margin-top: 10px;
+        padding: 10px;
+        border-radius: 4px;
+      }
+      .message.error {
+        background-color: #ffe6e6;
+        color: #ff0000;
+      }
+      .message.success {
+        background-color: #e6ffe6;
+        color: #008000;
       }
     </style>
 
@@ -114,71 +141,116 @@
   <body style="background-color: #061726dc;">
     <div style="height: 10px;"></div>
     <div class="container">
-      <div class="row justify-content-center">
-        <!-- Records -->
-        <div class="col-md-6 col-12">
-          <div class="grid-box">
+      <div class="row">
+        <!-- Statistics Section -->
+        <div class="col-md-4">
+          <div class="grid-box mb-4">
             <div class="mask mask-bg mask-shadow">
-              <div class="d-flex justify-content-center align-items-center h-100">
-                <h4 class="grid-header" style="margin: 2%;">Your Statistics</h4>
+              <div class="d-flex justify-content-center align-items-center">
+                <h4 class="grid-header m-3">Your Statistics</h4>
               </div>
             </div>
-            <div class="mask mask-shadow" style="background-color: rgb(245, 215, 133); padding: 20px; height: 90%">
-              <div style="padding-top: 3%;"></div>
-              <h5 class="body-font"><b>Overall Progress</b></h5>
-              <div style="padding-top: 3%;"></div>
-    
-              <div id="user-stat" style="width: 100%;">
+            <div class="mask mask-shadow" style="background-color: rgb(245, 215, 133); padding: 20px;">
+              <div id="user-stat">
                 <!-- Stats will be inserted here by JavaScript -->
               </div>
             </div>
           </div>
         </div>
     
-        <!-- Submission Forms -->
-        <div class="col-md-6 col-12">
-          <div class="grid-box">
+        <!-- Daily Steps Section -->
+        <div class="col-md-4">
+          <div class="grid-box mb-4">
             <div class="mask mask-bg mask-shadow">
-              <div class="d-flex justify-content-center align-items-center h-100">
-                <h4 class="grid-header" style="margin: 2%;">Submit Steps</h4>
+              <div class="d-flex justify-content-center align-items-center">
+                <h4 class="grid-header m-3">Daily Steps</h4>
               </div>
             </div>
-            <div class="grid-box mask-shadow" style="background-color: rgb(192, 208, 213); padding: 20px; height: 90%">
-              <!-- Daily Steps Form -->
-              <div class="form-section">
-                <h5 class="body-font"><b>Daily Steps</b></h5>
-                <form id="daily-steps-entry">
-                  <div style="display: flex; justify-content: space-between; align-items: center; margin-left: 25%; margin-right: 25%; margin-bottom: 4%">
-                    <label class="body-font" for="daily_date" style="font-size: 100%; text-align: left;">Date:</label>
-                    <input class="body-font" type="date" id="daily_date_input" name="date" style="width: 35%; height: 30%; font-size: 90%; padding: 2%; border-radius: 8px;">
-                  </div>
-                  <div style="display: flex; justify-content: space-between; align-items: center; margin-left: 25%; margin-right: 25%; margin-bottom: 4%">
-                    <label class="body-font" for="daily_steps" style="font-size: 100%; text-align: left;">Steps:</label>
-                    <input class="body-font" type="number" id="daily_steps_input" name="steps" min="0" style="width: 35%; height: 30%; font-size: 90%; padding: 2%; border-radius: 8px;" placeholder="0">
-                  </div>
-                  <button type="submit" class="btn btn-primary" style="width: 50%; font-size: 100%; margin: 5px; border-radius: 8px; font-family: Bahnschrift">Submit Daily Steps</button>
-                </form>
-              </div>
-
-              <!-- Weekly Steps Form -->
-              <div class="form-section">
-                <h5 class="body-font"><b>Weekly Steps</b></h5>
-                <form id="weekly-steps-entry">
-                  <div style="display: flex; justify-content: space-between; align-items: center; margin-left: 25%; margin-right: 25%; margin-bottom: 4%">
-                    <label class="body-font" for="week" style="font-size: 100%; text-align: left;">Week:</label>
-                    <input class="body-font" type="week" id="week_input" name="week" style="width: 35%; height: 30%; font-size: 90%; padding: 2%; border-radius: 8px;">
-                  </div>
-                  <div style="display: flex; justify-content: space-between; align-items: center; margin-left: 25%; margin-right: 25%; margin-bottom: 4%">
-                    <label class="body-font" for="weekly_steps" style="font-size: 100%; text-align: left;">Total Steps:</label>
-                    <input class="body-font" type="number" id="weekly_steps_input" name="steps" min="0" style="width: 35%; height: 30%; font-size: 90%; padding: 2%; border-radius: 8px;" placeholder="0">
-                  </div>
-                  <button type="submit" class="btn btn-primary" style="width: 50%; font-size: 100%; margin: 5px; border-radius: 8px; font-family: Bahnschrift">Submit Weekly Steps</button>
-                </form>
-              </div>
-
-              <div class="body-font" id="message" style="color: red;"></div>
+            <div class="mask mask-shadow" style="background-color: rgb(192, 208, 213); padding: 20px;">
+              <form id="daily-steps-entry" class="form-section">
+                <div class="input-group">
+                  <label class="body-font" for="daily_date_input">Date:</label>
+                  <input type="date" id="daily_date_input" class="form-control body-font">
+                </div>
+                <div class="input-group">
+                  <label class="body-font" for="daily_steps_input">Steps:</label>
+                  <input type="number" id="daily_steps_input" class="form-control body-font" 
+                         min="0" placeholder="Enter daily steps">
+                </div>
+                <button type="submit" class="btn btn-primary w-100 mt-3 body-font">Submit Daily Steps</button>
+              </form>
             </div>
           </div>
+        </div>
+    
+        <!-- Weekly Steps Section -->
+        <div class="col-md-4">
+          <div class="grid-box mb-4">
+            <div class="mask mask-bg mask-shadow">
+              <div class="d-flex justify-content-center align-items-center">
+                <h4 class="grid-header m-3">Weekly Steps</h4>
+              </div>
+            </div>
+            <div class="mask mask-shadow" style="background-color: rgb(192, 208, 213); padding: 20px;">
+              <form id="weekly-steps-entry" class="form-section">
+                <!-- Week Selection -->
+                <div class="input-group mb-3">
+                  <div class="d-flex align-items-center gap-2 w-100">
+                    <button type="button" class="btn btn-secondary body-font" id="prev_week" 
+                            style="flex: 0 0 auto; width: 40px;">
+                      ←
+                    </button>
+                    <div class="week-dates w-100 text-center body-font" 
+                         style="background-color: #fff; padding: 8px; border-radius: 4px;">
+                      <span id="current_week_range">Week Range</span>
+                    </div>
+                    <button type="button" class="btn btn-secondary body-font" id="next_week" 
+                            style="flex: 0 0 auto; width: 40px;">
+                      →
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Steps Input -->
+                <div class="input-group">
+                  <label class="body-font" for="weekly_steps_input">Total Steps:</label>
+                  <input type="number" id="weekly_steps_input" class="form-control body-font" 
+                         min="0" placeholder="Enter weekly steps">
+                </div>
+                <button type="submit" class="btn btn-primary w-100 mt-3 body-font">Submit Weekly Steps</button>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Photo Proof Section -->
+      <div class="row justify-content-center">
+        <div class="col-md-8">
+          <div class="grid-box mb-4">
+            <div class="mask mask-bg mask-shadow">
+              <div class="d-flex justify-content-center align-items-center">
+                <h4 class="grid-header m-3">Submit Photo Proof</h4>
+              </div>
+            </div>
+            <div class="mask mask-shadow" style="background-color: rgb(192, 208, 213); padding: 20px;">
+              <form id="photo-proof-entry" class="form-section">
+                <div class="input-group">
+                  <label class="body-font" for="photo_input">Upload Screenshot:</label>
+                  <input type="file" id="photo_input" class="form-control body-font" 
+                         accept="image/*">
+                </div>
+                <button type="submit" class="btn btn-primary w-100 mt-3 body-font">Submit Photo</button>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Message Display -->
+      <div class="row justify-content-center">
+        <div class="col-md-8">
+          <div id="message" class="body-font text-center" style="color: red;"></div>
         </div>
       </div>
     </div>    

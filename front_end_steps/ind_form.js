@@ -27,6 +27,19 @@ window.onload = async (event) => {
     
         // Call user stats with the username from token
         await showUserStat(event, `${apiBaseUrl}/user_steps_stats/${username}`, token);
+
+        // Set initial date values
+        const today = new Date();
+        document.getElementById('daily_date_input').value = today.toISOString().split('T')[0];
+        document.getElementById('daily_date_input').max = today.toISOString().split('T')[0];
+
+        // Set initial week value
+        const currentSunday = new Date(today);
+        while (currentSunday.getDay() !== 0) {
+            currentSunday.setDate(currentSunday.getDate() - 1);
+        }
+        document.getElementById('week_start_input').value = currentSunday.toISOString().split('T')[0];
+        updateWeekDisplay();
     } catch (err) {
         console.error('Error decoding token:', err);
     }
@@ -34,8 +47,6 @@ window.onload = async (event) => {
 
 async function showUserStat(event, fetch_path, token) {
     try {
-        let data = "";
-
         const response = await fetch(fetch_path, {
             method: 'GET',
             headers: {
@@ -46,44 +57,24 @@ async function showUserStat(event, fetch_path, token) {
         });
 
         if(response.ok){
-            data = await response.json();
-
+            const data = await response.json();
             const userStatContainer = document.getElementById("user-stat");
 
-            // Create stats summary section
-            const summaryDiv = document.createElement('div');
-            summaryDiv.className = 'stats-summary mb-4';
-            summaryDiv.innerHTML = `
-                <h4 class="header-font mb-3">Your Steps Summary</h4>
-                <div class="row">
-                    <div class="col-md-4">
-                        <div class="card text-center">
-                            <div class="card-body">
-                                <h5 class="card-title">Total Steps</h5>
-                                <p class="card-text">${data.total_steps.toLocaleString()}</p>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-4">
-                        <div class="card text-center">
-                            <div class="card-body">
-                                <h5 class="card-title">Weekly Steps</h5>
-                                <p class="card-text">${data.weekly_steps.toLocaleString()}</p>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-4">
-                        <div class="card text-center">
-                            <div class="card-body">
-                                <h5 class="card-title">Daily Average</h5>
-                                <p class="card-text">${data.daily_average.toLocaleString()}</p>
-                            </div>
-                        </div>
-                    </div>
+            // Create stats cards
+            userStatContainer.innerHTML = `
+                <div class="stats-card mb-3">
+                    <h6 class="body-font">Total Steps</h6>
+                    <h4 class="header-font">${data.total_steps.toLocaleString()}</h4>
+                </div>
+                <div class="stats-card mb-3">
+                    <h6 class="body-font">Weekly Steps</h6>
+                    <h4 class="header-font">${data.weekly_steps.toLocaleString()}</h4>
+                </div>
+                <div class="stats-card">
+                    <h6 class="body-font">Daily Average</h6>
+                    <h4 class="header-font">${data.daily_average.toLocaleString()}</h4>
                 </div>
             `;
-            userStatContainer.appendChild(summaryDiv);
-
         } else {
             document.getElementById("user-stat").innerHTML = 'Error fetching data';
         }
@@ -91,20 +82,124 @@ async function showUserStat(event, fetch_path, token) {
         console.error('Fetch error:', error);
         document.getElementById("user-stat").innerHTML = 'Fetch error occurred';
     }
-};
+}
 
-document.getElementById('steps-entry').addEventListener('submit', function (event) {
+// Daily Steps Form Handler
+document.getElementById('daily-steps-entry').addEventListener('submit', function(event) {
     event.preventDefault();
+    const date = document.getElementById('daily_date_input').value;
+    const steps = document.getElementById('daily_steps_input').value;
 
-    const date = document.getElementById('date_input').value.trim();
-    const steps = document.getElementById('steps_input').value.trim();
+    if (!date || !steps) {
+        document.getElementById('message').textContent = 'Please fill in all fields';
+        return;
+    }
 
-    // Call the API to submit steps
-    submitSteps(date, steps);
+    submitSteps({
+        date: date,
+        steps: parseInt(steps),
+        type: 'daily'
+    });
 });
 
-function submitSteps(date, steps) {
-    const apiEndpoint = `${apiBaseUrl}/submit_steps`;
+// Week selection functionality
+let currentWeekStart = new Date();
+
+// Initialize to current week's Sunday
+while (currentWeekStart.getDay() !== 0) {
+    currentWeekStart.setDate(currentWeekStart.getDate() - 1);
+}
+
+// Function to update the week display
+function updateWeekDisplay() {
+    const weekStart = new Date(currentWeekStart);
+    const weekEnd = new Date(currentWeekStart);
+    weekEnd.setDate(weekEnd.getDate() + 6);
+
+    // Format dates
+    const startStr = weekStart.toLocaleDateString('en-US', {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric'
+    });
+    const endStr = weekEnd.toLocaleDateString('en-US', {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric'
+    });
+
+    // Update the display
+    document.getElementById('current_week_range').textContent = `${startStr} - ${endStr}`;
+    
+    // Store dates for form submission (store in the week-dates div instead)
+    const weekDates = document.querySelector('.week-dates');
+    weekDates.dataset.startDate = weekStart.toISOString().split('T')[0];
+    weekDates.dataset.endDate = weekEnd.toISOString().split('T')[0];
+
+    // Disable next week button if it would go into the future
+    const today = new Date();
+    const nextWeekStart = new Date(currentWeekStart);
+    nextWeekStart.setDate(nextWeekStart.getDate() + 7);
+    document.getElementById('next_week').disabled = nextWeekStart > today;
+}
+
+// Add event listeners for week navigation
+document.getElementById('prev_week').addEventListener('click', () => {
+    currentWeekStart.setDate(currentWeekStart.getDate() - 7);
+    updateWeekDisplay();
+});
+
+document.getElementById('next_week').addEventListener('click', () => {
+    const nextWeek = new Date(currentWeekStart);
+    nextWeek.setDate(nextWeek.getDate() + 7);
+    
+    // Don't allow selecting future weeks
+    if (nextWeek <= new Date()) {
+        currentWeekStart = nextWeek;
+        updateWeekDisplay();
+    }
+});
+
+// Initialize week display on page load
+document.addEventListener('DOMContentLoaded', () => {
+    updateWeekDisplay();
+});
+
+// Update the weekly steps form submission to use the selected week
+document.getElementById('weekly-steps-entry').addEventListener('submit', function(event) {
+    event.preventDefault();
+    const weekDates = document.querySelector('.week-dates');
+    const startDate = weekDates.dataset.startDate;
+    const endDate = weekDates.dataset.endDate;
+    const steps = document.getElementById('weekly_steps_input').value;
+
+    if (!startDate || !endDate || !steps) {
+        document.getElementById('message').textContent = 'Please fill in all fields';
+        return;
+    }
+
+    submitSteps({
+        date: startDate,
+        endDate: endDate,
+        steps: parseInt(steps),
+        type: 'weekly'
+    });
+});
+
+// Photo Proof Form Handler
+document.getElementById('photo-proof-entry').addEventListener('submit', function(event) {
+    event.preventDefault();
+    const photoInput = document.getElementById('photo_input');
+    
+    if (!photoInput.files || photoInput.files.length === 0) {
+        document.getElementById('message').textContent = 'Please select a photo to upload';
+        return;
+    }
+
+    submitPhotoProof(photoInput.files[0]);
+});
+
+async function submitSteps(data) {
     const token = localStorage.getItem('authToken');
 
     if (!token) {
@@ -112,34 +207,70 @@ function submitSteps(date, steps) {
         return;
     }
 
-    fetch(apiEndpoint, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`,
-        },
-        mode: 'cors',
-        body: JSON.stringify({ date, steps })
-    }).then(async (response) => {
-        const data = await response.json();
+    try {
+        const response = await fetch(`${apiBaseUrl}/submit_steps`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            mode: 'cors',
+            body: JSON.stringify(data)
+        });
+
+        const responseData = await response.json();
+
         if (response.ok) {
-            document.getElementById('message').textContent = data.message;
-            // Refresh the stats after successful submission
+            document.getElementById('message').textContent = 'Steps submitted successfully!';
+            // Reset form
+            if (data.type === 'daily') {
+                document.getElementById('daily_steps_input').value = '';
+            } else {
+                document.getElementById('weekly_steps_input').value = '';
+            }
+            // Refresh stats
             const username = JSON.parse(atob(token.split('.')[1])).username;
-            showUserStat(null, `${apiBaseUrl}/user_steps_stats/${username}`, token);
+            await showUserStat(null, `${apiBaseUrl}/user_steps_stats/${username}`, token);
         } else {
-            document.getElementById('message').textContent = data.message;
+            document.getElementById('message').textContent = responseData.message || 'Error submitting steps';
         }
-    })
-    .catch((error) => {
-        console.error('Error submitting the form:', error);
-        document.getElementById('message').textContent = 'An error occurred while submitting the form.';
-    });
+    } catch (error) {
+        console.error('Error:', error);
+        document.getElementById('message').textContent = 'An error occurred while submitting steps';
+    }
 }
 
-// Set today's date as default in the date input
-document.addEventListener('DOMContentLoaded', function() {
-    const today = new Date().toISOString().split('T')[0];
-    document.getElementById('date_input').value = today;
-    document.getElementById('date_input').max = today; // Prevent future dates
-});
+async function submitPhotoProof(file) {
+    const token = localStorage.getItem('authToken');
+
+    if (!token) {
+        document.getElementById('message').textContent = 'Unauthorized: Please log in first.';
+        return;
+    }
+
+    const formData = new FormData();
+    formData.append('photo', file);
+
+    try {
+        const response = await fetch(`${apiBaseUrl}/submit_photo_proof`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`
+            },
+            mode: 'cors',
+            body: formData
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+            document.getElementById('message').textContent = 'Photo uploaded successfully!';
+            document.getElementById('photo_input').value = ''; // Reset file input
+        } else {
+            document.getElementById('message').textContent = data.message || 'Error uploading photo';
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        document.getElementById('message').textContent = 'An error occurred while uploading the photo';
+    }
+}
