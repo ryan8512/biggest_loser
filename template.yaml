@@ -49,6 +49,44 @@ Resources:
           Properties:
             Path: /check-index-form
             Method: post
+
+  StepsApiHandler:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: back_end/index_aws_steps.handler
+      Runtime: nodejs22.x
+      Timeout: 60
+      MemorySize: 128
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref Steps
+      Events:
+        LoginSteps:
+          Type: Api
+          Properties:
+            Path: /login_steps
+            Method: post
+        SubmitSteps:
+          Type: Api
+          Properties:
+            Path: /submit_steps
+            Method: post
+        GetOverallStepsLeaderboard:
+          Type: Api
+          Properties:
+            Path: /overall_steps_leaderboard
+            Method: get
+        GetWeeklyStepsLeaderboard:
+          Type: Api
+          Properties:
+            Path: /weekly_steps_leaderboard
+            Method: get
+        GetUserStepsStats:
+          Type: Api
+          Properties:
+            Path: /user_steps_stats/{username}
+            Method: get
+
   Weights:
     Type: AWS::DynamoDB::Table
     Properties:
@@ -64,10 +102,30 @@ Resources:
         - AttributeName: date
           KeyType: RANGE
       BillingMode: PAY_PER_REQUEST
+
+  Steps:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: Steps
+      AttributeDefinitions:
+        - AttributeName: username
+          AttributeType: S
+        - AttributeName: date
+          AttributeType: S
+      KeySchema:
+        - AttributeName: username
+          KeyType: HASH
+        - AttributeName: date
+          KeyType: RANGE
+      BillingMode: PAY_PER_REQUEST
+
 Outputs:
   ApiEndpoint:
     Description: "API Gateway endpoint"
     Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/"
-  DynamoDBTableName:
-    Description: "DynamoDB Table Name"
+  WeightsTableName:
+    Description: "Weights DynamoDB Table Name"
     Value: !Ref Weights
+  StepsTableName:
+    Description: "Steps DynamoDB Table Name"
+    Value: !Ref Steps

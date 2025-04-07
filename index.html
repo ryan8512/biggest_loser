@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>APH Wellness Club</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"/>
+    <style>
+      .centered-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+      .mask-bg {
+        background-color: rgba(0, 0, 0, 0.6);
+      }
+      .header-font {
+        font-family: Rockwell;
+      }
+      .body-font {
+        font-family: Bahnschrift;
+      }
+      .card {
+        transition: transform 0.3s;
+        margin: 20px;
+        width: 18rem;
+        background-color: rgba(255, 255, 255, 0.9);
+      }
+      .card:hover {
+        transform: scale(1.05);
+      }
+      .card-container {
+        display: flex;
+        justify-content: center;
+        flex-wrap: wrap;
+        gap: 20px;
+        padding: 40px 20px;
+      }
+      .welcome-section {
+        height: 350px;
+        background-image: url('https://cdn.pixabay.com/photo/2024/03/01/12/19/ai-generated-8606430_1280.jpg');
+        background-position: center top -210px;
+        background-size: cover;
+        margin-bottom: 20px;
+      }
+      .card-img-top {
+        height: 200px;
+        object-fit: cover;
+      }
+    </style>
+  </head>
+  <body style="background-color: #061726dc;">
+    <!-- Welcome Section -->
+    <div class="welcome-section">
+      <div class="mask mask-bg h-100">
+        <div class="container centered-container h-100">
+          <div class="text-white text-center">
+            <h1 class="mb-3 header-font" style="color: antiquewhite;"><b>APH Wellness Club</b></h1>
+            <h3 class="mb-0 header-font" style="color: antiquewhite;">Welcome</h3>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Cards Container -->
+    <div class="container">
+      <div class="card-container">
+        <!-- Weight Loss Card -->
+        <div class="card mask-shadow">
+          <img src="https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b" class="card-img-top" alt="Weight Scale">
+          <div class="card-body text-center">
+            <h5 class="card-title header-font"><b>Weight Loss Tracker</b></h5>
+            <p class="card-text body-font">Track your weight loss progress and compete with others.</p>
+            <a href="front_end/index.html" class="btn btn-primary body-font">Go to Weight Loss</a>
+          </div>
+        </div>
+
+        <!-- Steps Card -->
+        <div class="card mask-shadow">
+          <img src="https://images.unsplash.com/photo-1476480862126-209bfaa8edc8" class="card-img-top" alt="Steps">
+          <div class="card-body text-center">
+            <h5 class="card-title header-font"><b>Steps Tracker</b></h5>
+            <p class="card-text body-font">Monitor your daily steps and stay active with others.</p>
+            <a href="front_end_steps/index.html" class="btn btn-primary body-font">Go to Steps</a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <p class="mb-4 text-center" style="font-family: Avenir Next Condensed; color: antiquewhite;">-&nbsp;APH Wellness Committee&nbsp;-</p>
+  </body>
+</html>
