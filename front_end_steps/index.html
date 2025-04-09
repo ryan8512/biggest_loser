@@ -26,11 +26,13 @@
         padding: 30px;
         text-align: center;
       }
-      .header-font {
-        font-family: Rockwell;
-      }
-      .body-font {
-        font-family: Bahnschrift;
+      .bar-container {
+        width: 100%;
+        align-items: center;
+        display: flex;
+        gap: 10px;
+        position: relative;
+        justify-content: center;
       }
       .label {
         width: 50%;
@@ -48,6 +50,26 @@
         justify-content: space-between;
         display: flex;
         padding: 5px 30px;
+      }
+      .header-font {
+        font-family: Rockwell;
+      }
+      .body-font {
+        font-family: Bahnschrift;
+      }
+      .circle {
+        width: 65px;
+        height: 65px;
+        border-radius: 50%;
+        position: relative;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        border: 2px solid rgb(189, 162, 94);
+        box-shadow: 5px 5px 15px rgba(0, 0, 0, 0.3);
+        font-family: Bahnschrift;
+        color: rgb(255, 255, 255);
+        padding-top: 7px;
       }
     </style>
   </head>

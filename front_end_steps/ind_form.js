@@ -91,7 +91,7 @@ document.getElementById('daily-steps-entry').addEventListener('submit', function
     const steps = document.getElementById('daily_steps_input').value;
 
     if (!date || !steps) {
-        document.getElementById('message').textContent = 'Please fill in all fields';
+        document.getElementById('daily_message').textContent = 'Please fill in all fields';
         return;
     }
 
@@ -174,7 +174,7 @@ document.getElementById('weekly-steps-entry').addEventListener('submit', functio
     const steps = document.getElementById('weekly_steps_input').value;
 
     if (!startDate || !endDate || !steps) {
-        document.getElementById('message').textContent = 'Please fill in all fields';
+        document.getElementById('weekly_message').textContent = 'Please fill in all fields';
         return;
     }
 
@@ -192,7 +192,7 @@ document.getElementById('photo-proof-entry').addEventListener('submit', function
     const photoInput = document.getElementById('photo_input');
     
     if (!photoInput.files || photoInput.files.length === 0) {
-        document.getElementById('message').textContent = 'Please select a photo to upload';
+        document.getElementById('photo_message').textContent = 'Please select a photo to upload';
         return;
     }
 
@@ -203,7 +203,11 @@ async function submitSteps(data) {
     const token = localStorage.getItem('authToken');
 
     if (!token) {
-        document.getElementById('message').textContent = 'Unauthorized: Please log in first.';
+        if(data.type === 'daily'){
+            document.getElementById('daily_message').textContent = 'Unauthorized: Please log in first.';
+        } else if(data.type === 'weekly'){
+            document.getElementById('weekly_message').textContent = 'Unauthorized: Please log in first.';
+        }
         return;
     }
 
@@ -221,7 +225,11 @@ async function submitSteps(data) {
         const responseData = await response.json();
 
         if (response.ok) {
-            document.getElementById('message').textContent = 'Steps submitted successfully!';
+            if(data.type === 'daily'){
+                document.getElementById('daily_message').textContent = 'Steps submitted successfully!';
+            } else if(data.type === 'weekly'){
+                document.getElementById('weekly_message').textContent = 'Steps submitted successfully!';
+            }
             // Reset form
             if (data.type === 'daily') {
                 document.getElementById('daily_steps_input').value = '';
@@ -232,11 +240,19 @@ async function submitSteps(data) {
             const username = JSON.parse(atob(token.split('.')[1])).username;
             await showUserStat(null, `${apiBaseUrl}/user_steps_stats/${username}`, token);
         } else {
-            document.getElementById('message').textContent = responseData.message || 'Error submitting steps';
+            if(data.type === 'daily'){
+                document.getElementById('daily_message').textContent = responseData.message || 'Error submitting steps';
+            } else if(data.type === 'weekly'){
+                document.getElementById('weekly_message').textContent = responseData.message || 'Error submitting steps';
+            }
         }
     } catch (error) {
         console.error('Error:', error);
-        document.getElementById('message').textContent = 'An error occurred while submitting steps';
+        if(data.type === 'daily'){
+            document.getElementById('daily_message').textContent = 'An error occurred while submitting steps';
+        } else if(data.type === 'weekly'){
+            document.getElementById('weekly_message').textContent = 'An error occurred while submitting steps';
+        }
     }
 }
 
@@ -244,7 +260,7 @@ async function submitPhotoProof(file) {
     const token = localStorage.getItem('authToken');
 
     if (!token) {
-        document.getElementById('message').textContent = 'Unauthorized: Please log in first.';
+        document.getElementById('photo_message').textContent = 'Unauthorized: Please log in first.';
         return;
     }
 
@@ -264,13 +280,13 @@ async function submitPhotoProof(file) {
         const data = await response.json();
 
         if (response.ok) {
-            document.getElementById('message').textContent = 'Photo uploaded successfully!';
+            document.getElementById('photo_message').textContent = 'Photo uploaded successfully!';
             document.getElementById('photo_input').value = ''; // Reset file input
         } else {
-            document.getElementById('message').textContent = data.message || 'Error uploading photo';
+            document.getElementById('photo_message').textContent = data.message || 'Error uploading photo';
         }
     } catch (error) {
         console.error('Error:', error);
-        document.getElementById('message').textContent = 'An error occurred while uploading the photo';
+        document.getElementById('photo_message').textContent = 'An error occurred while uploading the photo';
     }
 }

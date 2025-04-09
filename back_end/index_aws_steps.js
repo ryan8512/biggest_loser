@@ -126,10 +126,12 @@ const loginSteps = async (event) => {
     const { username } = JSON.parse(event.body || '{}');
 
     // Using the same valid usernames as the weight tracking app
-    const validUsernames = ["warpedrufus", "mark", "ryan8512", "fitpokiko", "KLazo", "inchieinch", "capumali17", 
-                            "elvin6969", "sashimimojo", "mjadonis27", "jbuslig", "vintousan", "sgcalingasan", "fibi", 
-                            "jmborja", "anritsumae23", "demi1111", "lawrence", "pmc14", "riev", "jdcastro", "mmoyco", 
-                            "erika", "alucido"];
+    const validUsernames = [
+        "feetpokiko", "kierc", "elvin6969", "edgar", "inchieinch", "mark", "jdcastro", 
+        "jan", "atrin", "jbuslig", "alucido", "caryllll", "m3ow", "yugi14", "divine", "capumali17", 
+        "gryan", "riev", "ryan8512","lawrence","mjadonis27", "vintousan", "demi1111", "sashimimojo"
+    ];
+    
     if (!validUsernames.includes(username)) {
         return {
             statusCode: 404,
@@ -253,6 +255,65 @@ const submitPhotoProof = async (event) => {
     }
 };
 
+const leaderboard_step_logic = (userData) => {
+    const usernameToName = {
+        "feetpokiko": "Francis",
+        "kierc": "Kierc",
+        "elvin6969": "Elvin",
+        "edgar": "Edgar",
+        "inchieinch": "Inch",
+        "mark": "Mark",
+        "jdcastro": "Justine",
+        "jan": "Jan",
+        "atrin": "Kay",
+        "jbuslig": "Joshua",
+        "alucido": "Alvin",
+        "caryllll": "Caryll",
+        "m3ow": "Nathanael",
+        "yugi14": "Mehar",
+        "divine": "Divine",
+        "capumali17": "Coleen",
+        "gryan": "Gryan",
+        "riev": "Gerard",
+        "ryan8512": "Sam",
+        "lawrence" : "Lawrence",
+        "mjadonis27" : "Jonas",
+        "vintousan": "Vincent",
+        "demi1111": "Demi",
+        "sashimimojo": "PauGab"
+    };
+    
+
+    const userStepsMap = {};
+
+    for (const item of userData) {
+        const { username, steps, type } = item;
+
+        if (!userStepsMap[username]) {
+            userStepsMap[username] = { steps: 0, hasWeekly: false };
+        }
+
+        if (type === 'weekly') {
+            userStepsMap[username] = { steps, hasWeekly: true };
+        } else if (type === 'daily' && !userStepsMap[username].hasWeekly) {
+            userStepsMap[username].steps += steps;
+        }
+    }
+
+    const leaderboard = Object.entries(userStepsMap)
+        .map(([username, { steps }]) => ({
+            username: usernameToName[username] || username,  // Get name from usernameToName or fall back to username
+            steps
+        }))
+        .sort((a, b) => b.steps - a.steps)
+        .slice(0, 10); // Top 10
+
+    return {
+        statusCode: 200,
+        body: JSON.stringify(leaderboard),
+    };
+}
+
 const getOverallStepsLeaderboard = async () => {
     try {
         const params = {
@@ -262,26 +323,8 @@ const getOverallStepsLeaderboard = async () => {
         const result = await dynamoDb.scan(params).promise();
         const userData = result.Items;
 
-        // Group by username and sum steps
-        const userTotals = userData.reduce((acc, item) => {
-            const username = item.username;
-            if (!acc[username]) {
-                acc[username] = 0;
-            }
-            acc[username] += item.steps;
-            return acc;
-        }, {});
-
-        // Convert to array and sort by total steps
-        const leaderboard = Object.entries(userTotals)
-            .map(([username, steps]) => ({ username, steps }))
-            .sort((a, b) => b.steps - a.steps)
-            .slice(0, 10); // Top 10
-
-        return {
-            statusCode: 200,
-            body: JSON.stringify(leaderboard),
-        };
+        return leaderboard_step_logic(userData);
+        
     } catch (error) {
         console.error('Error:', error);
         return {
@@ -294,8 +337,8 @@ const getOverallStepsLeaderboard = async () => {
 const getWeeklyStepsLeaderboard = async () => {
     try {
         const currentDate = moment();
-        const startOfWeek = currentDate.clone().startOf('week').toISOString();
-        const endOfWeek = currentDate.clone().endOf('week').toISOString();
+        const startOfWeek = currentDate.clone().startOf('week').format('YYYY-MM-DD');
+        const endOfWeek = currentDate.clone().endOf('week').format('YYYY-MM-DD');
 
         const params = {
             TableName: 'Steps',
@@ -312,26 +355,8 @@ const getWeeklyStepsLeaderboard = async () => {
         const result = await dynamoDb.scan(params).promise();
         const weeklyData = result.Items;
 
-        // Group by username and sum steps
-        const userTotals = weeklyData.reduce((acc, item) => {
-            const username = item.username;
-            if (!acc[username]) {
-                acc[username] = 0;
-            }
-            acc[username] += item.steps;
-            return acc;
-        }, {});
+        return leaderboard_step_logic(weeklyData);
 
-        // Convert to array and sort by total steps
-        const leaderboard = Object.entries(userTotals)
-            .map(([username, steps]) => ({ username, steps }))
-            .sort((a, b) => b.steps - a.steps)
-            .slice(0, 10); // Top 10
-
-        return {
-            statusCode: 200,
-            body: JSON.stringify(leaderboard),
-        };
     } catch (error) {
         console.error('Error:', error);
         return {
@@ -340,6 +365,7 @@ const getWeeklyStepsLeaderboard = async () => {
         };
     }
 };
+
 
 const getUserStepsStats = async (event) => {
     try {
