@@ -1,7 +1,6 @@
 const moment = require('moment');
 const jwt = require('jsonwebtoken');
 const AWS = require('aws-sdk');
-const { getSignedCookies } = require('aws-cloudfront-sign');
 
 const isLocal = process.env.AWS_SAM_LOCAL === 'true';
 const BUCKET_NAME = 'biggestloser8152-steps'; // S3 bucket for steps photos
@@ -143,47 +142,10 @@ const loginSteps = async (event) => {
 
     const token = jwt.sign({ username }, 'your-secret-key', { expiresIn: '1h' });
 
-    // Signed cookie expiration (10 minutes from now)
-    const expiresIn = Date.now() + 10 * 60 * 1000;
-    // CloudFront cookie signing
-    let signedCookies;
-    try {
-        signedCookies = getSignedCookies({
-            url: 'https://d2iqcfd7f7h3ai.cloudfront.net/*',
-            keypairId: process.env.CF_KEY_PAIR_ID,
-            privateKeyString: process.env.CF_PRIVATE_KEY,
-            expireTime: expiresIn
-        });
-    } catch (err) {
-        return {
-            statusCode: 500,
-            body: JSON.stringify({ message: 'Error generating signed cookies' })
-        };
-    }
-
-    const { policy, signature, keyPairId } = signedCookies;
-
-    // return {
-    //     statusCode: 200,
-    //     body: JSON.stringify({ token }),
-    // };
     return {
         statusCode: 200,
-        headers: {
-          'Set-Cookie': [
-            `CloudFront-Policy=${policy}; Path=/; Secure; HttpOnly`,
-            `CloudFront-Signature=${signature}; Path=/; Secure; HttpOnly`,
-            `CloudFront-Key-Pair-Id=${keyPairId}; Path=/; Secure; HttpOnly`,
-            `jwt=${token}; Path=/; Secure`
-          ],
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          token,
-          redirect: 'front_end_steps/index_form.html' // or 'home.html', your choice
-        })
-      };
-      
+        body: JSON.stringify({ token }),
+    };  
 };
 
 const submitSteps = async (event) => {
