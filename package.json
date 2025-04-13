@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "AWS Lambda + Express app for the Biggest Loser project",
   "dependencies": {
+    "aws-cloudfront-sign": "^3.0.2",
     "aws-sdk": "^2.1692.0",
     "aws-serverless-express": "^3.4.0",
     "cors": "^2.8.5",
