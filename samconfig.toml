@@ -1,10 +1,11 @@
 version = 0.1
-[default.deploy.parameters]
-stack_name = "sam-app"
+[dev.deploy.parameters]
+stack_name = "sam-app-dev"
 resolve_s3 = true
-s3_prefix = "sam-app"
+s3_prefix = "sam-app-dev"
 region = "us-east-1"
 confirm_changeset = true
-capabilities = "CAPABILITY_IAM"
-image_repositories = []
 profile = "sam"
+capabilities = "CAPABILITY_IAM"
+parameter_overrides = "Stage=\"dev\""
+image_repositories = []

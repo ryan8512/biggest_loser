@@ -1,7 +1,7 @@
 let username = "";
 let debug_setting = 0;
 
-const apiBaseUrl = "https://r58t6xl40g.execute-api.us-east-1.amazonaws.com/Prod"; // Same API URL, different endpoints
+const apiBaseUrl = "https://n4dnb8w3vk.execute-api.us-east-1.amazonaws.com/dev/"; // Same API URL, different endpoints
 
 document.addEventListener('DOMContentLoaded', function() {
     const form = document.getElementById('usernameForm');
@@ -140,7 +140,7 @@ async function checkUsernameExistence(username) {
             const data = await response.json();
             localStorage.setItem('authToken', data.token);
             // Redirect to the steps form page
-            window.location.href = 'index_form.html';
+            window.location.href = data.redirect;
         } else {
             const error = await response.json();
             document.getElementById('message').textContent = error.message;
