@@ -1,4 +1,4 @@
-const apiBaseUrl = "https://n4dnb8w3vk.execute-api.us-east-1.amazonaws.com/dev/"; // Same API base URL
+const apiBaseUrl = "https://n4dnb8w3vk.execute-api.us-east-1.amazonaws.com/Prod"; // Same API base URL
 
 document.getElementById('logout_button').addEventListener('click', (event) => {
     localStorage.removeItem('authToken');

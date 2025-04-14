@@ -5,10 +5,20 @@ const { getSignedCookies } = require('aws-cloudfront-sign');
 
 const isLocal = process.env.AWS_SAM_LOCAL === 'true';
 const BUCKET_NAME = 'biggestloser8152-steps'; // S3 bucket for steps photos
+const isProd = 0;
 
 let dynamoDb = null;
 let dynamoDbService = null;
 const s3 = new AWS.S3();
+
+let DynamoDBTable = null;
+
+if(isProd){
+    DynamoDBTable = "Steps";
+}
+else{
+    DynamoDBTable = "Steps-dev"
+}
 
 if(isLocal){
     dynamoDb = new AWS.DynamoDB.DocumentClient({
@@ -27,7 +37,7 @@ if(isLocal){
 async function createTable() {
     if(!isLocal) return;
     const params = {
-        TableName: 'Steps',
+        TableName: DynamoDBTable,
         AttributeDefinitions: [
             { AttributeName: 'username', AttributeType: 'S' },
             { AttributeName: 'date', AttributeType: 'S' }
@@ -206,7 +216,7 @@ const submitSteps = async (event) => {
         }
 
         const params = {
-            TableName: 'Steps',
+            TableName: DynamoDBTable,
             Item: {
                 username: user.username,
                 date: date,
@@ -360,7 +370,7 @@ const leaderboard_step_logic = (userData) => {
 const getOverallStepsLeaderboard = async () => {
     try {
         const params = {
-            TableName: 'Steps',
+            TableName: DynamoDBTable,
         };
 
         const result = await dynamoDb.scan(params).promise();
@@ -384,7 +394,7 @@ const getWeeklyStepsLeaderboard = async () => {
         const endOfWeek = currentDate.clone().endOf('week').format('YYYY-MM-DD');
 
         const params = {
-            TableName: 'Steps',
+            TableName: DynamoDBTable,
             FilterExpression: '#date >= :startOfWeek AND #date <= :endOfWeek',
             ExpressionAttributeNames: {
                 '#date': 'date',
@@ -416,7 +426,7 @@ const getUserStepsStats = async (event) => {
 
         // Get all steps for the user
         const params = {
-            TableName: 'Steps',
+            TableName: DynamoDBTable,
             KeyConditionExpression: 'username = :username',
             ExpressionAttributeValues: {
                 ':username': username

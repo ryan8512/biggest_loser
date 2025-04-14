@@ -1,7 +1,7 @@
 let username = "";
 let debug_setting = 0;
 
-const apiBaseUrl = "https://n4dnb8w3vk.execute-api.us-east-1.amazonaws.com/dev/"; // Replace with your actual API URL
+const apiBaseUrl = "https://n4dnb8w3vk.execute-api.us-east-1.amazonaws.com/Prod"; // Replace with your actual API URL
 
 document.getElementById('usernameForm').addEventListener('submit', function(event) {
     event.preventDefault(); // Prevent the form from submitting normally
