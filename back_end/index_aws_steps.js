@@ -1,6 +1,7 @@
 const moment = require('moment');
 const jwt = require('jsonwebtoken');
 const AWS = require('aws-sdk');
+const ssm = new AWS.SSM();
 const { getSignedCookies } = require('aws-cloudfront-sign');
 
 const isLocal = process.env.AWS_SAM_LOCAL === 'true';
@@ -67,14 +68,19 @@ async function createTable() {
 // Helper function to add CORS headers to the response
 const addCORSHeaders = (response) => {
     const statusCode = response.statusCode;
+    const originalHeaders = response.headers || {};
     return {
         statusCode,
         body: response.body,
         headers: {
             'Content-Type': 'application/json',
-            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Origin': 'https://aphwellnessclubdev.stashbysam.com',
+            'Access-Control-Allow-Credentials': 'true',
             'Access-Control-Allow-Methods': 'GET,POST,OPTIONS',
             'Access-Control-Allow-Headers': 'Content-Type,Authorization,X-Amz-Date,X-Amz-Security-Token,X-Amz-User-Agent'
+        },
+        multiValueHeaders: {
+            'Set-Cookie': originalHeaders['Set-Cookie']  // now this is legal
         }
     };
 };
@@ -133,6 +139,15 @@ const verifyToken = (event) => {
     }
 };
 
+async function getPrivateKey() {
+    const result = await ssm.getParameter({
+      Name: '/cloudfront/privatekey', // Change to your actual param name
+      WithDecryption: true
+    }).promise();
+    return result.Parameter.Value;
+  }
+  
+
 const loginSteps = async (event) => {
     const { username } = JSON.parse(event.body || '{}');
 
@@ -154,43 +169,42 @@ const loginSteps = async (event) => {
     const token = jwt.sign({ username }, 'your-secret-key', { expiresIn: '1h' });
 
     // Signed cookie expiration (10 minutes from now)
-    const expiresIn = Date.now() + 10 * 60 * 1000;
+    const expiresIn = Math.floor(Date.now() / 1000) + 10 * 60; // now + 10 minutes in seconds
     // CloudFront cookie signing
     let signedCookies;
     try {
-        signedCookies = getSignedCookies({
-            url: 'https://d2iqcfd7f7h3ai.cloudfront.net/*',
+        const privateKey = await getPrivateKey();
+
+        signedCookies = getSignedCookies('https://aphwellnessclubdev.stashbysam.com/*',{
             keypairId: process.env.CF_KEY_PAIR_ID,
-            privateKeyString: process.env.CF_PRIVATE_KEY,
-            expireTime: expiresIn
+            privateKeyString: privateKey,
         });
     } catch (err) {
         return {
             statusCode: 500,
-            body: JSON.stringify({ message: 'Error generating signed cookies' })
+            body: JSON.stringify({ message: 'Error generating signed cookies', error: err.message })
         };
     }
 
-    const { policy, signature, keyPairId } = signedCookies;
+    const {
+        'CloudFront-Policy': policy,
+        'CloudFront-Signature': signature,
+        'CloudFront-Key-Pair-Id': keyPairId
+      } = signedCookies;
 
-    // return {
-    //     statusCode: 200,
-    //     body: JSON.stringify({ token }),
-    // };
     return {
         statusCode: 200,
         headers: {
-          'Set-Cookie': [
-            `CloudFront-Policy=${policy}; Path=/; Secure; HttpOnly`,
-            `CloudFront-Signature=${signature}; Path=/; Secure; HttpOnly`,
-            `CloudFront-Key-Pair-Id=${keyPairId}; Path=/; Secure; HttpOnly`,
-            `jwt=${token}; Path=/; Secure`
-          ],
-          'Content-Type': 'application/json'
+            'Set-Cookie': [
+                `CloudFront-Policy=${policy}; Path=/; Secure; SameSite=None`,
+                `CloudFront-Signature=${signature}; Path=/; Secure; SameSite=None`,
+                `CloudFront-Key-Pair-Id=${keyPairId}; Path=/; Secure; SameSite=None`,
+                `jwt=${token}; Path=/; Secure; SameSite=None`
+            ],
         },
         body: JSON.stringify({
           token,
-          redirect: 'front_end_steps/index_form.html' // or 'home.html', your choice
+          redirect: 'index_form.html' // or 'home.html', your choice
         })
       };
       

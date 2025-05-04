@@ -1,7 +1,7 @@
 let username = "";
 let debug_setting = 0;
 
-const apiBaseUrl = "https://n4dnb8w3vk.execute-api.us-east-1.amazonaws.com/Prod"; // Same API URL, different endpoints
+const apiBaseUrl = "https://aphwellnessclubdev-api.stashbysam.com"; // Same API URL, different endpoints
 
 document.addEventListener('DOMContentLoaded', function() {
     const form = document.getElementById('usernameForm');
@@ -133,7 +133,8 @@ async function checkUsernameExistence(username) {
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify({ username }),
-            mode: 'cors'
+            mode: 'cors',
+            credentials: 'include' 
         });
 
         if (response.ok) {
