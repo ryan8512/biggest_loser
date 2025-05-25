@@ -126,15 +126,37 @@
 
     <!-- Leaderboards -->
     <div class="divs-container">
-      <div id="overall-leaderboard" class="box mask-shadow" style="background-color: rgb(224, 208, 176);">
+      <div class="box mask-shadow" style="background-color: rgb(224, 208, 176);">
         <h5 class="header-font"><b>Overall Ranking</b></h5>
         <h6 class="header-font">By Total Steps</h6>
         <div style="padding-top: 2%;"></div>
+        <div id="overall-leaderboard">
+        </div>
       </div>
       <div id="weekly-leaderboard" class="box mask-shadow" style="background-color: rgb(170, 207, 214);">
         <h5 class="header-font"><b>Weekly Ranking</b></h5>
         <h6 class="header-font">By Weekly Steps</h6>
         <div style="padding-top: 2%;"></div>
+        
+        <!-- Weekly Tabs -->
+        <ul class="nav nav-tabs" id="weeklyTabs" role="tablist">
+          <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="current-week-tab" data-bs-toggle="tab" data-bs-target="#current-week" type="button" role="tab" aria-controls="current-week" aria-selected="true">Current Week</button>
+          </li>
+          <li class="nav-item" role="presentation">
+            <button class="nav-link" id="last-week-tab" data-bs-toggle="tab" data-bs-target="#last-week" type="button" role="tab" aria-controls="last-week" aria-selected="false">Last Week</button>
+          </li>
+          <li class="nav-item" role="presentation">
+            <button class="nav-link" id="two-weeks-tab" data-bs-toggle="tab" data-bs-target="#two-weeks" type="button" role="tab" aria-controls="two-weeks" aria-selected="false">Two Weeks Ago</button>
+          </li>
+        </ul>
+        
+        <!-- Tab Content -->
+        <div class="tab-content" id="weeklyTabContent">
+          <div class="tab-pane fade show active" id="current-week" role="tabpanel" aria-labelledby="current-week-tab"></div>
+          <div class="tab-pane fade" id="last-week" role="tabpanel" aria-labelledby="last-week-tab"></div>
+          <div class="tab-pane fade" id="two-weeks" role="tabpanel" aria-labelledby="two-weeks-tab"></div>
+        </div>
       </div>
     </div>
 

@@ -10,6 +10,27 @@ document.addEventListener('DOMContentLoaded', function() {
     // Update leaderboards on page load
     updateLeaderboards();
     
+    // Add event listeners for weekly tabs
+    document.querySelectorAll('#weeklyTabs button').forEach(button => {
+        button.addEventListener('click', function() {
+            const weekOffset = this.id.split('-')[0] === 'current' ? 0 : 
+                             this.id.split('-')[0] === 'last' ? 1 : 2;
+            
+            // Remove active class from all tabs and panes
+            document.querySelectorAll('#weeklyTabs button').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.tab-pane').forEach(pane => {
+                pane.classList.remove('show', 'active');
+            });
+            
+            // Add active class to clicked tab and its pane
+            this.classList.add('active');
+            const targetPane = document.querySelector(this.getAttribute('data-bs-target'));
+            targetPane.classList.add('show', 'active');
+            
+            updateWeeklyLeaderboard(weekOffset);
+        });
+    });
+    
     form.addEventListener('submit', async function(e) {
         e.preventDefault();
         
@@ -25,20 +46,30 @@ document.addEventListener('DOMContentLoaded', function() {
     async function updateLeaderboards() {
         try {
             // Fetch overall leaderboard
-            await showLeaderboard(null, '/overall_steps_leaderboard');
+            await showLeaderboard(null, '/overall_steps_leaderboard', 'overall-leaderboard'); //
             
-            // Fetch weekly leaderboard
-            await showLeaderboard(null, '/weekly_steps_leaderboard');
+            // Fetch current week's leaderboard
+            await updateWeeklyLeaderboard(0);
             
         } catch (error) {
             console.error('Error fetching leaderboard:', error);
         }
     }
     
-    async function showLeaderboard(event, fetch_path) {
+    async function updateWeeklyLeaderboard(weekOffset) {
+        try {
+            const endpoint = `/weekly_steps_leaderboard?week_offset=${weekOffset}`;
+            const tabId = weekOffset === 0 ? 'current-week' : 
+                         weekOffset === 1 ? 'last-week' : 'two-weeks';
+            await showLeaderboard(null, endpoint, tabId);
+        } catch (error) {
+            console.error('Error fetching weekly leaderboard:', error);
+        }
+    }
+    
+    async function showLeaderboard(event, fetch_path, targetId) {
         try {
             let data = "";
-            let fetch_id = fetch_path.includes('weekly') ? 'weekly-leaderboard' : 'overall-leaderboard';
             
             if(debug_setting == 1){
                 data = [
@@ -58,12 +89,13 @@ document.addEventListener('DOMContentLoaded', function() {
                 if(response.ok){
                     data = await response.json();
                 } else {
-                    document.getElementById(fetch_id).innerHTML = 'Error fetching data';
+                    document.getElementById(targetId).innerHTML = 'Error fetching data';
                     return;
                 }
             }
             
-            const leaderboardContainer = document.getElementById(fetch_id);
+            const leaderboardContainer = document.getElementById(targetId);
+            leaderboardContainer.innerHTML = ''; // Clear existing content
             
             const medalColors = [
                 { r: 254, g: 216, b: 0 },  // Gold
@@ -118,7 +150,7 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         } catch (error) {
             console.error('Fetch error:', error);
-            document.getElementById(fetch_id).innerHTML = 'Fetch error occurred';
+            document.getElementById(targetId).innerHTML = 'Fetch error occurred';
         }
     }
 });
