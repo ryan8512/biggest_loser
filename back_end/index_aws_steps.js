@@ -130,7 +130,7 @@ const loginSteps = async (event) => {
         "feetpokiko", "kierc", "elvin6969", "edgar", "inchieinch", "mark", "jdcastro", 
         "jan", "atrin", "jbuslig", "alucido", "caryllll", "m3ow", "yugi14", "divine", "capumali17", 
         "gryan", "riev", "ryan8512","lawrence","mjadonis27", "vintousan", "demi1111", "sashimimojo","krn",
-        "rumali","androidiee","erika"
+        "rumali","androidiee","erika","fibi"
     ];
     
     if (!validUsernames.includes(username)) {
@@ -256,7 +256,7 @@ const submitPhotoProof = async (event) => {
     }
 };
 
-const leaderboard_step_logic = (userData) => {
+const leaderboard_step_logic = (userData, overall) => {
     const usernameToName = {
         "feetpokiko": "Francis",
         "kierc": "Kierc",
@@ -285,12 +285,13 @@ const leaderboard_step_logic = (userData) => {
         "krn": "Karen",
         "rumali": "Romeo",
         "androidiee": "A-Jay",
-        "erika":"Erika"
+        "erika":"Erika",
+        "fibi": "Phoebe"
     };
     
 
     const userStepsMap = {};
-
+        
     for (const item of userData) {
         const { username, steps, type } = item;
 
@@ -298,10 +299,14 @@ const leaderboard_step_logic = (userData) => {
             userStepsMap[username] = { steps: 0, hasWeekly: false };
         }
 
-        if (type === 'weekly') {
-            userStepsMap[username] = { steps, hasWeekly: true };
-        } else if (type === 'daily' && !userStepsMap[username].hasWeekly) {
+        if(overall == 1){
             userStepsMap[username].steps += steps;
+        }else{
+            if (type === 'weekly') {
+                userStepsMap[username] = { steps, hasWeekly: true };
+            } else if (type === 'daily' && !userStepsMap[username].hasWeekly) {
+                userStepsMap[username].steps += steps;
+            }
         }
     }
 
@@ -311,7 +316,7 @@ const leaderboard_step_logic = (userData) => {
             steps
         }))
         .sort((a, b) => b.steps - a.steps)
-        .slice(0, 10); // Top 10
+        .slice(0, 15); // Limit to top 15
 
     return {
         statusCode: 200,
@@ -328,7 +333,7 @@ const getOverallStepsLeaderboard = async () => {
         const result = await dynamoDb.scan(params).promise();
         const userData = result.Items;
 
-        return leaderboard_step_logic(userData);
+        return leaderboard_step_logic(userData, 1);
         
     } catch (error) {
         console.error('Error:', error);
@@ -360,7 +365,7 @@ const getWeeklyStepsLeaderboard = async () => {
         const result = await dynamoDb.scan(params).promise();
         const weeklyData = result.Items;
 
-        return leaderboard_step_logic(weeklyData);
+        return leaderboard_step_logic(weeklyData, 0);
 
     } catch (error) {
         console.error('Error:', error);
@@ -393,8 +398,8 @@ const getUserStepsStats = async (event) => {
 
         // Calculate weekly steps (current week)
         const currentDate = moment();
-        const startOfWeek = currentDate.clone().startOf('week').toISOString();
-        const endOfWeek = currentDate.clone().endOf('week').toISOString();
+        const startOfWeek = currentDate.clone().startOf('week').format('YYYY-MM-DD');
+        const endOfWeek = currentDate.clone().endOf('week').format('YYYY-MM-DD');
 
         const weekly_steps = userData
             .filter(item => item.date >= startOfWeek && item.date <= endOfWeek)
