@@ -344,11 +344,15 @@ const getOverallStepsLeaderboard = async () => {
     }
 };
 
-const getWeeklyStepsLeaderboard = async () => {
+const getWeeklyStepsLeaderboard = async (event) => {
     try {
+        // Get week_offset from query parameters, default to 0 (current week)
+        const weekOffset = parseInt(event.queryStringParameters?.week_offset || '0');
+        
         const currentDate = moment();
-        const startOfWeek = currentDate.clone().startOf('week').format('YYYY-MM-DD');
-        const endOfWeek = currentDate.clone().endOf('week').format('YYYY-MM-DD');
+        const targetDate = currentDate.clone().subtract(weekOffset, 'weeks');
+        const startOfWeek = targetDate.clone().startOf('week').format('YYYY-MM-DD');
+        const endOfWeek = targetDate.clone().endOf('week').format('YYYY-MM-DD');
 
         const params = {
             TableName: 'Steps',
