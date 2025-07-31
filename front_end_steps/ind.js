@@ -18,7 +18,7 @@ document.addEventListener('DOMContentLoaded', function() {
             
             // Remove active class from all tabs and panes
             document.querySelectorAll('#weeklyTabs button').forEach(btn => btn.classList.remove('active'));
-            document.querySelectorAll('.tab-pane').forEach(pane => {
+            document.querySelectorAll('#weeklyTabContent .tab-pane').forEach(pane => {
                 pane.classList.remove('show', 'active');
             });
             
@@ -28,6 +28,26 @@ document.addEventListener('DOMContentLoaded', function() {
             targetPane.classList.add('show', 'active');
             
             updateWeeklyLeaderboard(weekOffset);
+        });
+    });
+
+    document.querySelectorAll('#monthlyTabs button').forEach(button => {
+        button.addEventListener('click', function() {
+            const monthOffset = this.id.split('-')[0] === 'current' ? 0 : 
+                             this.id.split('-')[0] === 'last' ? 1 : 2;
+            
+            // Remove active class from all tabs and panes
+            document.querySelectorAll('#monthlyTabs button').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('#monthlyTabContent .tab-pane').forEach(pane => {
+                pane.classList.remove('show', 'active');
+            });
+            
+            // Add active class to clicked tab and its pane
+            this.classList.add('active');
+            const targetPane = document.querySelector(this.getAttribute('data-bs-target'));
+            targetPane.classList.add('show', 'active');
+            
+            updateMonthlyLeaderboard(monthOffset);
         });
     });
     
@@ -46,7 +66,7 @@ document.addEventListener('DOMContentLoaded', function() {
     async function updateLeaderboards() {
         try {
             // Fetch overall leaderboard
-            await showLeaderboard(null, '/overall_steps_leaderboard', 'overall-leaderboard'); //
+            await updateMonthlyLeaderboard(0);
             
             // Fetch current week's leaderboard
             await updateWeeklyLeaderboard(0);
@@ -64,6 +84,17 @@ document.addEventListener('DOMContentLoaded', function() {
             await showLeaderboard(null, endpoint, tabId);
         } catch (error) {
             console.error('Error fetching weekly leaderboard:', error);
+        }
+    }
+
+    async function updateMonthlyLeaderboard(monthOffset) {
+        try {
+            const endpoint = `/overall_steps_leaderboard?month_offset=${monthOffset}`;
+            const tabId = monthOffset === 0 ? 'current-month' : 
+                         monthOffset === 1 ? 'last-month' : 'two-month';
+            await showLeaderboard(null, endpoint, tabId);
+        } catch (error) {
+            console.error('Error fetching monthly leaderboard:', error);
         }
     }
     

@@ -324,10 +324,26 @@ const leaderboard_step_logic = (userData, overall) => {
     };
 }
 
-const getOverallStepsLeaderboard = async () => {
+const getOverallStepsLeaderboard = async (event) => {
     try {
+        // Get week_offset from query parameters, default to 0 (current week)
+        const monthOffset = parseInt(event.queryStringParameters?.month_offset || '0');
+        
+        const currentDate = moment();
+        const targetDate = currentDate.clone().subtract(monthOffset, 'month');
+        const startOfMonth = targetDate.clone().startOf('month').format('YYYY-MM-DD');
+        const endOfMonth = targetDate.clone().endOf('month').format('YYYY-MM-DD');
+
         const params = {
             TableName: 'Steps',
+            FilterExpression: '#date >= :startOfMonth AND #date <= :endOfMonth',
+            ExpressionAttributeNames: {
+                '#date': 'date',
+            },
+            ExpressionAttributeValues: {
+                ':startOfMonth': startOfMonth,
+                ':endOfMonth': endOfMonth,
+            },
         };
 
         const result = await dynamoDb.scan(params).promise();
