@@ -14,7 +14,9 @@ document.addEventListener('DOMContentLoaded', function() {
     document.querySelectorAll('#weeklyTabs button').forEach(button => {
         button.addEventListener('click', function() {
             const weekOffset = this.id.split('-')[0] === 'current' ? 0 : 
-                             this.id.split('-')[0] === 'last' ? 1 : 2;
+                             this.id.split('-')[0] === 'last' ? 1 :
+                             this.id.split('-')[0] === 'two' ? 2 :
+                             this.id.split('-')[0] === 'three' ? 3 : 4;
             
             // Remove active class from all tabs and panes
             document.querySelectorAll('#weeklyTabs button').forEach(btn => btn.classList.remove('active'));
@@ -80,7 +82,9 @@ document.addEventListener('DOMContentLoaded', function() {
         try {
             const endpoint = `/weekly_steps_leaderboard?week_offset=${weekOffset}`;
             const tabId = weekOffset === 0 ? 'current-week' : 
-                         weekOffset === 1 ? 'last-week' : 'two-weeks';
+                          weekOffset === 1 ? 'last-week' : 
+                          weekOffset === 2 ? 'two-weeks' : 
+                         weekOffset === 3 ? 'three-weeks' : 'four-weeks';
             await showLeaderboard(null, endpoint, tabId);
         } catch (error) {
             console.error('Error fetching weekly leaderboard:', error);
