@@ -1,0 +1,3014 @@
+{
+ "Parameters": {
+  "Stage": {
+   "Type": "String",
+   "Default": "dev",
+   "AllowedValues": [
+    "dev",
+    "prod"
+   ],
+   "Description": "Deployment stage (dev or prod)"
+  },
+  "BootstrapVersion": {
+   "Type": "AWS::SSM::Parameter::Value<String>",
+   "Default": "/cdk-bootstrap/hnb659fds/version",
+   "Description": "Version of the CDK Bootstrap resources in this environment, automatically retrieved from SSM Parameter Store. [cdk:skip]"
+  }
+ },
+ "Resources": {
+  "AphWellnessClubBucketEF289B9B": {
+   "Type": "AWS::S3::Bucket",
+   "Properties": {
+    "BucketEncryption": {
+     "ServerSideEncryptionConfiguration": [
+      {
+       "ServerSideEncryptionByDefault": {
+        "SSEAlgorithm": "AES256"
+       }
+      }
+     ]
+    },
+    "BucketName": "aphwellnessclubdev.stashbysam.com",
+    "PublicAccessBlockConfiguration": {
+     "BlockPublicAcls": true,
+     "BlockPublicPolicy": true,
+     "IgnorePublicAcls": true,
+     "RestrictPublicBuckets": true
+    },
+    "VersioningConfiguration": {
+     "Status": "Enabled"
+    }
+   },
+   "UpdateReplacePolicy": "Retain",
+   "DeletionPolicy": "Retain",
+   "Metadata": {
+    "aws:cdk:path": "AphWellnessClubStack/AphWellnessClubBucket/Resource"
+   }
+  },
+  "AphWellnessClubBucketPolicy1AE7FE3D": {
+   "Type": "AWS::S3::BucketPolicy",
+   "Properties": {
+    "Bucket": {
+     "Ref": "AphWellnessClubBucketEF289B9B"
+    },
+    "PolicyDocument": {
+     "Statement": [
+      {
+       "Action": "s3:GetObject",
+       "Condition": {
+        "StringEquals": {
+         "AWS:SourceArn": {
+          "Fn::Join": [
+           "",
+           [
+            "arn:aws:cloudfront::160885252259:distribution/",
+            {
+             "Ref": "AphWellnessClubDistribution5EC2D170"
+            }
+           ]
+          ]
+         }
+        }
+       },
+       "Effect": "Allow",
+       "Principal": {
+        "Service": "cloudfront.amazonaws.com"
+       },
+       "Resource": {
+        "Fn::Join": [
+         "",
+         [
+          {
+           "Fn::GetAtt": [
+            "AphWellnessClubBucketEF289B9B",
+            "Arn"
+           ]
+          },
+          "/*"
+         ]
+        ]
+       }
+      }
+     ],
+     "Version": "2012-10-17"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "AphWellnessClubStack/AphWellnessClubBucket/Policy/Resource"
+   }
+  },
+  "StepsPhotoBucketD7504056": {
+   "Type": "AWS::S3::Bucket",
+   "Properties": {
+    "BucketName": {
+     "Fn::Join": [
+      "",
+      [
+       "biggestloser8152-steps-",
+       {
+        "Ref": "Stage"
+       }
+      ]
+     ]
+    },
+    "CorsConfiguration": {
+     "CorsRules": [
+      {
+       "AllowedHeaders": [
+        "*"
+       ],
+       "AllowedMethods": [
+        "GET",
+        "PUT",
+        "POST"
+       ],
+       "AllowedOrigins": [
+        "*"
+       ],
+       "MaxAge": 3000
+      }
+     ]
+    }
+   },
+   "UpdateReplacePolicy": "Retain",
+   "DeletionPolicy": "Retain",
+   "Metadata": {
+    "aws:cdk:path": "AphWellnessClubStack/StepsPhotoBucket/Resource"
+   }
+  },
+  "WeightsTableA0241212": {
+   "Type": "AWS::DynamoDB::Table",
+   "Properties": {
+    "AttributeDefinitions": [
+     {
+      "AttributeName": "username",
+      "AttributeType": "S"
+     },
+     {
+      "AttributeName": "date",
+      "AttributeType": "S"
+     }
+    ],
+    "BillingMode": "PAY_PER_REQUEST",
+    "KeySchema": [
+     {
+      "AttributeName": "username",
+      "KeyType": "HASH"
+     },
+     {
+      "AttributeName": "date",
+      "KeyType": "RANGE"
+     }
+    ],
+    "TableName": {
+     "Fn::Join": [
+      "",
+      [
+       "Weights-",
+       {
+        "Ref": "Stage"
+       }
+      ]
+     ]
+    }
+   },
+   "UpdateReplacePolicy": "Retain",
+   "DeletionPolicy": "Retain",
+   "Metadata": {
+    "aws:cdk:path": "AphWellnessClubStack/WeightsTable/Resource"
+   }
+  },
+  "StepsTableF5F5879D": {
+   "Type": "AWS::DynamoDB::Table",
+   "Properties": {
+    "AttributeDefinitions": [
+     {
+      "AttributeName": "username",
+      "AttributeType": "S"
+     },
+     {
+      "AttributeName": "date",
+      "AttributeType": "S"
+     }
+    ],
+    "BillingMode": "PAY_PER_REQUEST",
+    "KeySchema": [
+     {
+      "AttributeName": "username",
+      "KeyType": "HASH"
+     },
+     {
+      "AttributeName": "date",
+      "KeyType": "RANGE"
+     }
+    ],
+    "TableName": {
+     "Fn::Join": [
+      "",
+      [
+       "Steps-",
+       {
+        "Ref": "Stage"
+       }
+      ]
+     ]
+    }
+   },
+   "UpdateReplacePolicy": "Retain",
+   "DeletionPolicy": "Retain",
+   "Metadata": {
+    "aws:cdk:path": "AphWellnessClubStack/StepsTable/Resource"
+   }
+  },
+  "ApiHandlerServiceRole592E70E9": {
+   "Type": "AWS::IAM::Role",
+   "Properties": {
+    "AssumeRolePolicyDocument": {
+     "Statement": [
+      {
+       "Action": "sts:AssumeRole",
+       "Effect": "Allow",
+       "Principal": {
+        "Service": "lambda.amazonaws.com"
+       }
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "ManagedPolicyArns": [
+     {
+      "Fn::Join": [
+       "",
+       [
+        "arn:",
+        {
+         "Ref": "AWS::Partition"
+        },
+        ":iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+       ]
+      ]
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "AphWellnessClubStack/ApiHandler/ServiceRole/Resource"
+   }
+  },
+  "ApiHandlerServiceRoleDefaultPolicy10321D87": {
+   "Type": "AWS::IAM::Policy",
+   "Properties": {
+    "PolicyDocument": {
+     "Statement": [
+      {
+       "Action": [
+        "dynamodb:BatchGetItem",
+        "dynamodb:GetRecords",
+        "dynamodb:GetShardIterator",
+        "dynamodb:Query",
+        "dynamodb:GetItem",
+        "dynamodb:Scan",
+        "dynamodb:ConditionCheckItem",
+        "dynamodb:BatchWriteItem",
+        "dynamodb:PutItem",
+        "dynamodb:UpdateItem",
+        "dynamodb:DeleteItem",
+        "dynamodb:DescribeTable"
+       ],
+       "Effect": "Allow",
+       "Resource": [
+        {
+         "Fn::GetAtt": [
+          "WeightsTableA0241212",
+          "Arn"
+         ]
+        },
+        {
+         "Ref": "AWS::NoValue"
+        }
+       ]
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "PolicyName": "ApiHandlerServiceRoleDefaultPolicy10321D87",
+    "Roles": [
+     {
+      "Ref": "ApiHandlerServiceRole592E70E9"
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "AphWellnessClubStack/ApiHandler/ServiceRole/DefaultPolicy/Resource"
+   }
+  },
+  "ApiHandler5E7490E8": {
+   "Type": "AWS::Lambda::Function",
+   "Properties": {
+    "Code": {
+     "S3Bucket": "cdk-hnb659fds-assets-160885252259-us-east-1",
+     "S3Key": "f9b55f7f5649ae890217d7e400e247dc9379d05ca2d18bff38a5aad31f0fe181.zip"
+    },
+    "Environment": {
+     "Variables": {
+      "STAGE": {
+       "Ref": "Stage"
+      }
+     }
+    },
+    "Handler": "back_end/index_aws.handler",
+    "MemorySize": 128,
+    "Role": {
+     "Fn::GetAtt": [
+      "ApiHandlerServiceRole592E70E9",
+      "Arn"
+     ]
+    },
+    "Runtime": "nodejs22.x",
+    "Timeout": 60
+   },
+   "DependsOn": [
+    "ApiHandlerServiceRoleDefaultPolicy10321D87",
+    "ApiHandlerServiceRole592E70E9"
+   ],
+   "Metadata": {
+    "aws:cdk:path": "AphWellnessClubStack/ApiHandler/Resource",
+    "aws:asset:path": "asset.f9b55f7f5649ae890217d7e400e247dc9379d05ca2d18bff38a5aad31f0fe181",
+    "aws:asset:is-bundled": false,
+    "aws:asset:property": "Code"
+   }
+  },
+  "StepsApiHandlerServiceRoleFE3C4B36": {
+   "Type": "AWS::IAM::Role",
+   "Properties": {
+    "AssumeRolePolicyDocument": {
+     "Statement": [
+      {
+       "Action": "sts:AssumeRole",
+       "Effect": "Allow",
+       "Principal": {
+        "Service": "lambda.amazonaws.com"
+       }
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "ManagedPolicyArns": [
+     {
+      "Fn::Join": [
+       "",
+       [
+        "arn:",
+        {
+         "Ref": "AWS::Partition"
+        },
+        ":iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+       ]
+      ]
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "AphWellnessClubStack/StepsApiHandler/ServiceRole/Resource"
+   }
+  },
+  "StepsApiHandlerServiceRoleDefaultPolicy0567C6BF": {
+   "Type": "AWS::IAM::Policy",
+   "Properties": {
+    "PolicyDocument": {
+     "Statement": [
+      {
+       "Action": [
+        "dynamodb:BatchGetItem",
+        "dynamodb:GetRecords",
+        "dynamodb:GetShardIterator",
+        "dynamodb:Query",
+        "dynamodb:GetItem",
+        "dynamodb:Scan",
+        "dynamodb:ConditionCheckItem",
+        "dynamodb:BatchWriteItem",
+        "dynamodb:PutItem",
+        "dynamodb:UpdateItem",
+        "dynamodb:DeleteItem",
+        "dynamodb:DescribeTable"
+       ],
+       "Effect": "Allow",
+       "Resource": [
+        {
+         "Fn::GetAtt": [
+          "StepsTableF5F5879D",
+          "Arn"
+         ]
+        },
+        {
+         "Ref": "AWS::NoValue"
+        }
+       ]
+      },
+      {
+       "Action": [
+        "s3:GetObject*",
+        "s3:GetBucket*",
+        "s3:List*",
+        "s3:DeleteObject*",
+        "s3:PutObject",
+        "s3:PutObjectLegalHold",
+        "s3:PutObjectRetention",
+        "s3:PutObjectTagging",
+        "s3:PutObjectVersionTagging",
+        "s3:Abort*"
+       ],
+       "Effect": "Allow",
+       "Resource": [
+        {
+         "Fn::GetAtt": [
+          "StepsPhotoBucketD7504056",
+          "Arn"
+         ]
+        },
+        {
+         "Fn::Join": [
+          "",
+          [
+           {
+            "Fn::GetAtt": [
+             "StepsPhotoBucketD7504056",
+             "Arn"
+            ]
+           },
+           "/*"
+          ]
+         ]
+        }
+       ]
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "PolicyName": "StepsApiHandlerServiceRoleDefaultPolicy0567C6BF",
+    "Roles": [
+     {
+      "Ref": "StepsApiHandlerServiceRoleFE3C4B36"
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "AphWellnessClubStack/StepsApiHandler/ServiceRole/DefaultPolicy/Resource"
+   }
+  },
+  "StepsApiHandler3CFB1098": {
+   "Type": "AWS::Lambda::Function",
+   "Properties": {
+    "Code": {
+     "S3Bucket": "cdk-hnb659fds-assets-160885252259-us-east-1",
+     "S3Key": "f9b55f7f5649ae890217d7e400e247dc9379d05ca2d18bff38a5aad31f0fe181.zip"
+    },
+    "Environment": {
+     "Variables": {
+      "STAGE": {
+       "Ref": "Stage"
+      }
+     }
+    },
+    "Handler": "back_end/index_aws_steps.handler",
+    "MemorySize": 128,
+    "Role": {
+     "Fn::GetAtt": [
+      "StepsApiHandlerServiceRoleFE3C4B36",
+      "Arn"
+     ]
+    },
+    "Runtime": "nodejs22.x",
+    "Timeout": 60
+   },
+   "DependsOn": [
+    "StepsApiHandlerServiceRoleDefaultPolicy0567C6BF",
+    "StepsApiHandlerServiceRoleFE3C4B36"
+   ],
+   "Metadata": {
+    "aws:cdk:path": "AphWellnessClubStack/StepsApiHandler/Resource",
+    "aws:asset:path": "asset.f9b55f7f5649ae890217d7e400e247dc9379d05ca2d18bff38a5aad31f0fe181",
+    "aws:asset:is-bundled": false,
+    "aws:asset:property": "Code"
+   }
+  },
+  "AphWellnessClubApi71C4F1FD": {
+   "Type": "AWS::ApiGateway::RestApi",
+   "Properties": {
+    "Description": "API for Aph Wellness Club",
+    "Name": {
+     "Fn::Join": [
+      "",
+      [
+       "AphWellnessClubApi-",
+       {
+        "Ref": "Stage"
+       }
+      ]
+     ]
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "AphWellnessClubStack/AphWellnessClubApi/Resource"
+   }
+  },
+  "AphWellnessClubApiCloudWatchRole8B6071BF": {
+   "Type": "AWS::IAM::Role",
+   "Properties": {
+    "AssumeRolePolicyDocument": {
+     "Statement": [
+      {
+       "Action": "sts:AssumeRole",
+       "Effect": "Allow",
+       "Principal": {
+        "Service": "apigateway.amazonaws.com"
+       }
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "ManagedPolicyArns": [
+     {
+      "Fn::Join": [
+       "",
+       [
+        "arn:",
+        {
+         "Ref": "AWS::Partition"
+        },
+        ":iam::aws:policy/service-role/AmazonAPIGatewayPushToCloudWatchLogs"
+       ]
+      ]
+     }
+    ]
+   },
+   "UpdateReplacePolicy": "Retain",
+   "DeletionPolicy": "Retain",
+   "Metadata": {
+    "aws:cdk:path": "AphWellnessClubStack/AphWellnessClubApi/CloudWatchRole/Resource"
+   }
+  },
+  "AphWellnessClubApiAccount160C1B89": {
+   "Type": "AWS::ApiGateway::Account",
+   "Properties": {
+    "CloudWatchRoleArn": {
+     "Fn::GetAtt": [
+      "AphWellnessClubApiCloudWatchRole8B6071BF",
+      "Arn"
+     ]
+    }
+   },
+   "DependsOn": [
+    "AphWellnessClubApi71C4F1FD"
+   ],
+   "UpdateReplacePolicy": "Retain",
+   "DeletionPolicy": "Retain",
+   "Metadata": {
+    "aws:cdk:path": "AphWellnessClubStack/AphWellnessClubApi/Account"
+   }
+  },
+  "AphWellnessClubApiDeployment068C5D6Ae07e52700bcfc012badfaa3dbd7ccf2d": {
+   "Type": "AWS::ApiGateway::Deployment",
+   "Properties": {
+    "Description": "API for Aph Wellness Club",
+    "RestApiId": {
+     "Ref": "AphWellnessClubApi71C4F1FD"
+    }
+   },
+   "DependsOn": [
+    "AphWellnessClubApicheckindexformOPTIONS9F5C8EF8",
+    "AphWellnessClubApicheckindexformPOST09E2219A",
+    "AphWellnessClubApicheckindexform75E689B8",
+    "AphWellnessClubApicheckusernameOPTIONS375BF674",
+    "AphWellnessClubApicheckusernamePOSTB6C41C51",
+    "AphWellnessClubApicheckusername7D018D19",
+    "AphWellnessClubApicheckweightOPTIONS66F10B80",
+    "AphWellnessClubApicheckweightPOST4BE290B0",
+    "AphWellnessClubApicheckweight31581250",
+    "AphWellnessClubApigetoverallleaderboardGET79FD1966",
+    "AphWellnessClubApigetoverallleaderboardOPTIONSBCEED99B",
+    "AphWellnessClubApigetoverallleaderboardCAE9B245",
+    "AphWellnessClubApigetuserstatGET157C5A4C",
+    "AphWellnessClubApigetuserstatOPTIONS8DE0E436",
+    "AphWellnessClubApigetuserstatBFF3E151",
+    "AphWellnessClubApigetweeklyleaderboardGET2B48D7FC",
+    "AphWellnessClubApigetweeklyleaderboardOPTIONS8A0D2D33",
+    "AphWellnessClubApigetweeklyleaderboardC1253333",
+    "AphWellnessClubApiloginstepsOPTIONSD6F0ED81",
+    "AphWellnessClubApiloginstepsPOST9E936D5A",
+    "AphWellnessClubApiloginstepsB2F5B133",
+    "AphWellnessClubApiOPTIONS79D0064B",
+    "AphWellnessClubApioverallstepsleaderboardGETF14D3FD9",
+    "AphWellnessClubApioverallstepsleaderboardOPTIONS95A27A9A",
+    "AphWellnessClubApioverallstepsleaderboardC10F7B08",
+    "AphWellnessClubApisubmitphotoproofOPTIONSB3C95953",
+    "AphWellnessClubApisubmitphotoproofPOST0CC8813F",
+    "AphWellnessClubApisubmitphotoproof5C8BBBC2",
+    "AphWellnessClubApisubmitstepsOPTIONS2D8B70F4",
+    "AphWellnessClubApisubmitstepsPOST0FD0D8B1",
+    "AphWellnessClubApisubmitsteps1C62274B",
+    "AphWellnessClubApiuserstepsstatsusernameGET303D0740",
+    "AphWellnessClubApiuserstepsstatsusernameOPTIONSCF1DB773",
+    "AphWellnessClubApiuserstepsstatsusername3AE43726",
+    "AphWellnessClubApiuserstepsstatsOPTIONSD38154A1",
+    "AphWellnessClubApiuserstepsstatsAF24F4AC",
+    "AphWellnessClubApiweeklystepsleaderboardGET702028CB",
+    "AphWellnessClubApiweeklystepsleaderboardOPTIONS66B709A0",
+    "AphWellnessClubApiweeklystepsleaderboard5F3C3A1B"
+   ],
+   "Metadata": {
+    "aws:cdk:path": "AphWellnessClubStack/AphWellnessClubApi/Deployment/Resource"
+   }
+  },
+  "AphWellnessClubApiDeploymentStageprod3522B631": {
+   "Type": "AWS::ApiGateway::Stage",
+   "Properties": {
+    "DeploymentId": {
+     "Ref": "AphWellnessClubApiDeployment068C5D6Ae07e52700bcfc012badfaa3dbd7ccf2d"
+    },
+    "RestApiId": {
+     "Ref": "AphWellnessClubApi71C4F1FD"
+    },
+    "StageName": "prod"
+   },
+   "DependsOn": [
+    "AphWellnessClubApiAccount160C1B89"
+   ],
+   "Metadata": {
+    "aws:cdk:path": "AphWellnessClubStack/AphWellnessClubApi/DeploymentStage.prod/Resource"
+   }
+  },
+  "AphWellnessClubApiOPTIONS79D0064B": {
+   "Type": "AWS::ApiGateway::Method",
+   "Properties": {
+    "ApiKeyRequired": false,
+    "AuthorizationType": "NONE",
+    "HttpMethod": "OPTIONS",
+    "Integration": {
+     "IntegrationResponses": [
+      {
+       "ResponseParameters": {
+        "method.response.header.Access-Control-Allow-Headers": "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token,X-Amz-User-Agent'",
+        "method.response.header.Access-Control-Allow-Origin": "'*'",
+        "method.response.header.Access-Control-Allow-Methods": "'OPTIONS,GET,PUT,POST,DELETE,PATCH,HEAD'"
+       },
+       "StatusCode": "204"
+      }
+     ],
+     "RequestTemplates": {
+      "application/json": "{ statusCode: 200 }"
+     },
+     "Type": "MOCK"
+    },
+    "MethodResponses": [
+     {
+      "ResponseParameters": {
+       "method.response.header.Access-Control-Allow-Headers": true,
+       "method.response.header.Access-Control-Allow-Origin": true,
+       "method.response.header.Access-Control-Allow-Methods": true
+      },
+      "StatusCode": "204"
+     }
+    ],
+    "ResourceId": {
+     "Fn::GetAtt": [
+      "AphWellnessClubApi71C4F1FD",
+      "RootResourceId"
+     ]
+    },
+    "RestApiId": {
+     "Ref": "AphWellnessClubApi71C4F1FD"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "AphWellnessClubStack/AphWellnessClubApi/Default/OPTIONS/Resource"
+   }
+  },
+  "AphWellnessClubApicheckusername7D018D19": {
+   "Type": "AWS::ApiGateway::Resource",
+   "Properties": {
+    "ParentId": {
+     "Fn::GetAtt": [
+      "AphWellnessClubApi71C4F1FD",
+      "RootResourceId"
+     ]
+    },
+    "PathPart": "check-username",
+    "RestApiId": {
+     "Ref": "AphWellnessClubApi71C4F1FD"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "AphWellnessClubStack/AphWellnessClubApi/Default/check-username/Resource"
+   }
+  },
+  "AphWellnessClubApicheckusernameOPTIONS375BF674": {
+   "Type": "AWS::ApiGateway::Method",
+   "Properties": {
+    "ApiKeyRequired": false,
+    "AuthorizationType": "NONE",
+    "HttpMethod": "OPTIONS",
+    "Integration": {
+     "IntegrationResponses": [
+      {
+       "ResponseParameters": {
+        "method.response.header.Access-Control-Allow-Headers": "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token,X-Amz-User-Agent'",
+        "method.response.header.Access-Control-Allow-Origin": "'*'",
+        "method.response.header.Access-Control-Allow-Methods": "'OPTIONS,GET,PUT,POST,DELETE,PATCH,HEAD'"
+       },
+       "StatusCode": "204"
+      }
+     ],
+     "RequestTemplates": {
+      "application/json": "{ statusCode: 200 }"
+     },
+     "Type": "MOCK"
+    },
+    "MethodResponses": [
+     {
+      "ResponseParameters": {
+       "method.response.header.Access-Control-Allow-Headers": true,
+       "method.response.header.Access-Control-Allow-Origin": true,
+       "method.response.header.Access-Control-Allow-Methods": true
+      },
+      "StatusCode": "204"
+     }
+    ],
+    "ResourceId": {
+     "Ref": "AphWellnessClubApicheckusername7D018D19"
+    },
+    "RestApiId": {
+     "Ref": "AphWellnessClubApi71C4F1FD"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "AphWellnessClubStack/AphWellnessClubApi/Default/check-username/OPTIONS/Resource"
+   }
+  },
+  "AphWellnessClubApicheckusernamePOSTApiPermissionAphWellnessClubStackAphWellnessClubApi78F58BDAPOSTcheckusername87101B4A": {
+   "Type": "AWS::Lambda::Permission",
+   "Properties": {
+    "Action": "lambda:InvokeFunction",
+    "FunctionName": {
+     "Fn::GetAtt": [
+      "ApiHandler5E7490E8",
+      "Arn"
+     ]
+    },
+    "Principal": "apigateway.amazonaws.com",
+    "SourceArn": {
+     "Fn::Join": [
+      "",
+      [
+       "arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":execute-api:us-east-1:160885252259:",
+       {
+        "Ref": "AphWellnessClubApi71C4F1FD"
+       },
+       "/",
+       {
+        "Ref": "AphWellnessClubApiDeploymentStageprod3522B631"
+       },
+       "/POST/check-username"
+      ]
+     ]
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "AphWellnessClubStack/AphWellnessClubApi/Default/check-username/POST/ApiPermission.AphWellnessClubStackAphWellnessClubApi78F58BDA.POST..check-username"
+   }
+  },
+  "AphWellnessClubApicheckusernamePOSTApiPermissionTestAphWellnessClubStackAphWellnessClubApi78F58BDAPOSTcheckusername8B58CF43": {
+   "Type": "AWS::Lambda::Permission",
+   "Properties": {
+    "Action": "lambda:InvokeFunction",
+    "FunctionName": {
+     "Fn::GetAtt": [
+      "ApiHandler5E7490E8",
+      "Arn"
+     ]
+    },
+    "Principal": "apigateway.amazonaws.com",
+    "SourceArn": {
+     "Fn::Join": [
+      "",
+      [
+       "arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":execute-api:us-east-1:160885252259:",
+       {
+        "Ref": "AphWellnessClubApi71C4F1FD"
+       },
+       "/test-invoke-stage/POST/check-username"
+      ]
+     ]
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "AphWellnessClubStack/AphWellnessClubApi/Default/check-username/POST/ApiPermission.Test.AphWellnessClubStackAphWellnessClubApi78F58BDA.POST..check-username"
+   }
+  },
+  "AphWellnessClubApicheckusernamePOSTB6C41C51": {
+   "Type": "AWS::ApiGateway::Method",
+   "Properties": {
+    "AuthorizationType": "NONE",
+    "HttpMethod": "POST",
+    "Integration": {
+     "IntegrationHttpMethod": "POST",
+     "Type": "AWS_PROXY",
+     "Uri": {
+      "Fn::Join": [
+       "",
+       [
+        "arn:",
+        {
+         "Ref": "AWS::Partition"
+        },
+        ":apigateway:us-east-1:lambda:path/2015-03-31/functions/",
+        {
+         "Fn::GetAtt": [
+          "ApiHandler5E7490E8",
+          "Arn"
+         ]
+        },
+        "/invocations"
+       ]
+      ]
+     }
+    },
+    "ResourceId": {
+     "Ref": "AphWellnessClubApicheckusername7D018D19"
+    },
+    "RestApiId": {
+     "Ref": "AphWellnessClubApi71C4F1FD"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "AphWellnessClubStack/AphWellnessClubApi/Default/check-username/POST/Resource"
+   }
+  },
+  "AphWellnessClubApicheckweight31581250": {
+   "Type": "AWS::ApiGateway::Resource",
+   "Properties": {
+    "ParentId": {
+     "Fn::GetAtt": [
+      "AphWellnessClubApi71C4F1FD",
+      "RootResourceId"
+     ]
+    },
+    "PathPart": "check-weight",
+    "RestApiId": {
+     "Ref": "AphWellnessClubApi71C4F1FD"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "AphWellnessClubStack/AphWellnessClubApi/Default/check-weight/Resource"
+   }
+  },
+  "AphWellnessClubApicheckweightOPTIONS66F10B80": {
+   "Type": "AWS::ApiGateway::Method",
+   "Properties": {
+    "ApiKeyRequired": false,
+    "AuthorizationType": "NONE",
+    "HttpMethod": "OPTIONS",
+    "Integration": {
+     "IntegrationResponses": [
+      {
+       "ResponseParameters": {
+        "method.response.header.Access-Control-Allow-Headers": "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token,X-Amz-User-Agent'",
+        "method.response.header.Access-Control-Allow-Origin": "'*'",
+        "method.response.header.Access-Control-Allow-Methods": "'OPTIONS,GET,PUT,POST,DELETE,PATCH,HEAD'"
+       },
+       "StatusCode": "204"
+      }
+     ],
+     "RequestTemplates": {
+      "application/json": "{ statusCode: 200 }"
+     },
+     "Type": "MOCK"
+    },
+    "MethodResponses": [
+     {
+      "ResponseParameters": {
+       "method.response.header.Access-Control-Allow-Headers": true,
+       "method.response.header.Access-Control-Allow-Origin": true,
+       "method.response.header.Access-Control-Allow-Methods": true
+      },
+      "StatusCode": "204"
+     }
+    ],
+    "ResourceId": {
+     "Ref": "AphWellnessClubApicheckweight31581250"
+    },
+    "RestApiId": {
+     "Ref": "AphWellnessClubApi71C4F1FD"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "AphWellnessClubStack/AphWellnessClubApi/Default/check-weight/OPTIONS/Resource"
+   }
+  },
+  "AphWellnessClubApicheckweightPOSTApiPermissionAphWellnessClubStackAphWellnessClubApi78F58BDAPOSTcheckweightB670E3CA": {
+   "Type": "AWS::Lambda::Permission",
+   "Properties": {
+    "Action": "lambda:InvokeFunction",
+    "FunctionName": {
+     "Fn::GetAtt": [
+      "ApiHandler5E7490E8",
+      "Arn"
+     ]
+    },
+    "Principal": "apigateway.amazonaws.com",
+    "SourceArn": {
+     "Fn::Join": [
+      "",
+      [
+       "arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":execute-api:us-east-1:160885252259:",
+       {
+        "Ref": "AphWellnessClubApi71C4F1FD"
+       },
+       "/",
+       {
+        "Ref": "AphWellnessClubApiDeploymentStageprod3522B631"
+       },
+       "/POST/check-weight"
+      ]
+     ]
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "AphWellnessClubStack/AphWellnessClubApi/Default/check-weight/POST/ApiPermission.AphWellnessClubStackAphWellnessClubApi78F58BDA.POST..check-weight"
+   }
+  },
+  "AphWellnessClubApicheckweightPOSTApiPermissionTestAphWellnessClubStackAphWellnessClubApi78F58BDAPOSTcheckweight7F4BFC60": {
+   "Type": "AWS::Lambda::Permission",
+   "Properties": {
+    "Action": "lambda:InvokeFunction",
+    "FunctionName": {
+     "Fn::GetAtt": [
+      "ApiHandler5E7490E8",
+      "Arn"
+     ]
+    },
+    "Principal": "apigateway.amazonaws.com",
+    "SourceArn": {
+     "Fn::Join": [
+      "",
+      [
+       "arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":execute-api:us-east-1:160885252259:",
+       {
+        "Ref": "AphWellnessClubApi71C4F1FD"
+       },
+       "/test-invoke-stage/POST/check-weight"
+      ]
+     ]
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "AphWellnessClubStack/AphWellnessClubApi/Default/check-weight/POST/ApiPermission.Test.AphWellnessClubStackAphWellnessClubApi78F58BDA.POST..check-weight"
+   }
+  },
+  "AphWellnessClubApicheckweightPOST4BE290B0": {
+   "Type": "AWS::ApiGateway::Method",
+   "Properties": {
+    "AuthorizationType": "NONE",
+    "HttpMethod": "POST",
+    "Integration": {
+     "IntegrationHttpMethod": "POST",
+     "Type": "AWS_PROXY",
+     "Uri": {
+      "Fn::Join": [
+       "",
+       [
+        "arn:",
+        {
+         "Ref": "AWS::Partition"
+        },
+        ":apigateway:us-east-1:lambda:path/2015-03-31/functions/",
+        {
+         "Fn::GetAtt": [
+          "ApiHandler5E7490E8",
+          "Arn"
+         ]
+        },
+        "/invocations"
+       ]
+      ]
+     }
+    },
+    "ResourceId": {
+     "Ref": "AphWellnessClubApicheckweight31581250"
+    },
+    "RestApiId": {
+     "Ref": "AphWellnessClubApi71C4F1FD"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "AphWellnessClubStack/AphWellnessClubApi/Default/check-weight/POST/Resource"
+   }
+  },
+  "AphWellnessClubApigetweeklyleaderboardC1253333": {
+   "Type": "AWS::ApiGateway::Resource",
+   "Properties": {
+    "ParentId": {
+     "Fn::GetAtt": [
+      "AphWellnessClubApi71C4F1FD",
+      "RootResourceId"
+     ]
+    },
+    "PathPart": "get-weekly-leaderboard",
+    "RestApiId": {
+     "Ref": "AphWellnessClubApi71C4F1FD"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "AphWellnessClubStack/AphWellnessClubApi/Default/get-weekly-leaderboard/Resource"
+   }
+  },
+  "AphWellnessClubApigetweeklyleaderboardOPTIONS8A0D2D33": {
+   "Type": "AWS::ApiGateway::Method",
+   "Properties": {
+    "ApiKeyRequired": false,
+    "AuthorizationType": "NONE",
+    "HttpMethod": "OPTIONS",
+    "Integration": {
+     "IntegrationResponses": [
+      {
+       "ResponseParameters": {
+        "method.response.header.Access-Control-Allow-Headers": "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token,X-Amz-User-Agent'",
+        "method.response.header.Access-Control-Allow-Origin": "'*'",
+        "method.response.header.Access-Control-Allow-Methods": "'OPTIONS,GET,PUT,POST,DELETE,PATCH,HEAD'"
+       },
+       "StatusCode": "204"
+      }
+     ],
+     "RequestTemplates": {
+      "application/json": "{ statusCode: 200 }"
+     },
+     "Type": "MOCK"
+    },
+    "MethodResponses": [
+     {
+      "ResponseParameters": {
+       "method.response.header.Access-Control-Allow-Headers": true,
+       "method.response.header.Access-Control-Allow-Origin": true,
+       "method.response.header.Access-Control-Allow-Methods": true
+      },
+      "StatusCode": "204"
+     }
+    ],
+    "ResourceId": {
+     "Ref": "AphWellnessClubApigetweeklyleaderboardC1253333"
+    },
+    "RestApiId": {
+     "Ref": "AphWellnessClubApi71C4F1FD"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "AphWellnessClubStack/AphWellnessClubApi/Default/get-weekly-leaderboard/OPTIONS/Resource"
+   }
+  },
+  "AphWellnessClubApigetweeklyleaderboardGETApiPermissionAphWellnessClubStackAphWellnessClubApi78F58BDAGETgetweeklyleaderboardF6257E19": {
+   "Type": "AWS::Lambda::Permission",
+   "Properties": {
+    "Action": "lambda:InvokeFunction",
+    "FunctionName": {
+     "Fn::GetAtt": [
+      "ApiHandler5E7490E8",
+      "Arn"
+     ]
+    },
+    "Principal": "apigateway.amazonaws.com",
+    "SourceArn": {
+     "Fn::Join": [
+      "",
+      [
+       "arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":execute-api:us-east-1:160885252259:",
+       {
+        "Ref": "AphWellnessClubApi71C4F1FD"
+       },
+       "/",
+       {
+        "Ref": "AphWellnessClubApiDeploymentStageprod3522B631"
+       },
+       "/GET/get-weekly-leaderboard"
+      ]
+     ]
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "AphWellnessClubStack/AphWellnessClubApi/Default/get-weekly-leaderboard/GET/ApiPermission.AphWellnessClubStackAphWellnessClubApi78F58BDA.GET..get-weekly-leaderboard"
+   }
+  },
+  "AphWellnessClubApigetweeklyleaderboardGETApiPermissionTestAphWellnessClubStackAphWellnessClubApi78F58BDAGETgetweeklyleaderboardC373B2C3": {
+   "Type": "AWS::Lambda::Permission",
+   "Properties": {
+    "Action": "lambda:InvokeFunction",
+    "FunctionName": {
+     "Fn::GetAtt": [
+      "ApiHandler5E7490E8",
+      "Arn"
+     ]
+    },
+    "Principal": "apigateway.amazonaws.com",
+    "SourceArn": {
+     "Fn::Join": [
+      "",
+      [
+       "arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":execute-api:us-east-1:160885252259:",
+       {
+        "Ref": "AphWellnessClubApi71C4F1FD"
+       },
+       "/test-invoke-stage/GET/get-weekly-leaderboard"
+      ]
+     ]
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "AphWellnessClubStack/AphWellnessClubApi/Default/get-weekly-leaderboard/GET/ApiPermission.Test.AphWellnessClubStackAphWellnessClubApi78F58BDA.GET..get-weekly-leaderboard"
+   }
+  },
+  "AphWellnessClubApigetweeklyleaderboardGET2B48D7FC": {
+   "Type": "AWS::ApiGateway::Method",
+   "Properties": {
+    "AuthorizationType": "NONE",
+    "HttpMethod": "GET",
+    "Integration": {
+     "IntegrationHttpMethod": "POST",
+     "Type": "AWS_PROXY",
+     "Uri": {
+      "Fn::Join": [
+       "",
+       [
+        "arn:",
+        {
+         "Ref": "AWS::Partition"
+        },
+        ":apigateway:us-east-1:lambda:path/2015-03-31/functions/",
+        {
+         "Fn::GetAtt": [
+          "ApiHandler5E7490E8",
+          "Arn"
+         ]
+        },
+        "/invocations"
+       ]
+      ]
+     }
+    },
+    "ResourceId": {
+     "Ref": "AphWellnessClubApigetweeklyleaderboardC1253333"
+    },
+    "RestApiId": {
+     "Ref": "AphWellnessClubApi71C4F1FD"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "AphWellnessClubStack/AphWellnessClubApi/Default/get-weekly-leaderboard/GET/Resource"
+   }
+  },
+  "AphWellnessClubApigetoverallleaderboardCAE9B245": {
+   "Type": "AWS::ApiGateway::Resource",
+   "Properties": {
+    "ParentId": {
+     "Fn::GetAtt": [
+      "AphWellnessClubApi71C4F1FD",
+      "RootResourceId"
+     ]
+    },
+    "PathPart": "get-overall-leaderboard",
+    "RestApiId": {
+     "Ref": "AphWellnessClubApi71C4F1FD"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "AphWellnessClubStack/AphWellnessClubApi/Default/get-overall-leaderboard/Resource"
+   }
+  },
+  "AphWellnessClubApigetoverallleaderboardOPTIONSBCEED99B": {
+   "Type": "AWS::ApiGateway::Method",
+   "Properties": {
+    "ApiKeyRequired": false,
+    "AuthorizationType": "NONE",
+    "HttpMethod": "OPTIONS",
+    "Integration": {
+     "IntegrationResponses": [
+      {
+       "ResponseParameters": {
+        "method.response.header.Access-Control-Allow-Headers": "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token,X-Amz-User-Agent'",
+        "method.response.header.Access-Control-Allow-Origin": "'*'",
+        "method.response.header.Access-Control-Allow-Methods": "'OPTIONS,GET,PUT,POST,DELETE,PATCH,HEAD'"
+       },
+       "StatusCode": "204"
+      }
+     ],
+     "RequestTemplates": {
+      "application/json": "{ statusCode: 200 }"
+     },
+     "Type": "MOCK"
+    },
+    "MethodResponses": [
+     {
+      "ResponseParameters": {
+       "method.response.header.Access-Control-Allow-Headers": true,
+       "method.response.header.Access-Control-Allow-Origin": true,
+       "method.response.header.Access-Control-Allow-Methods": true
+      },
+      "StatusCode": "204"
+     }
+    ],
+    "ResourceId": {
+     "Ref": "AphWellnessClubApigetoverallleaderboardCAE9B245"
+    },
+    "RestApiId": {
+     "Ref": "AphWellnessClubApi71C4F1FD"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "AphWellnessClubStack/AphWellnessClubApi/Default/get-overall-leaderboard/OPTIONS/Resource"
+   }
+  },
+  "AphWellnessClubApigetoverallleaderboardGETApiPermissionAphWellnessClubStackAphWellnessClubApi78F58BDAGETgetoverallleaderboard930720E2": {
+   "Type": "AWS::Lambda::Permission",
+   "Properties": {
+    "Action": "lambda:InvokeFunction",
+    "FunctionName": {
+     "Fn::GetAtt": [
+      "ApiHandler5E7490E8",
+      "Arn"
+     ]
+    },
+    "Principal": "apigateway.amazonaws.com",
+    "SourceArn": {
+     "Fn::Join": [
+      "",
+      [
+       "arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":execute-api:us-east-1:160885252259:",
+       {
+        "Ref": "AphWellnessClubApi71C4F1FD"
+       },
+       "/",
+       {
+        "Ref": "AphWellnessClubApiDeploymentStageprod3522B631"
+       },
+       "/GET/get-overall-leaderboard"
+      ]
+     ]
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "AphWellnessClubStack/AphWellnessClubApi/Default/get-overall-leaderboard/GET/ApiPermission.AphWellnessClubStackAphWellnessClubApi78F58BDA.GET..get-overall-leaderboard"
+   }
+  },
+  "AphWellnessClubApigetoverallleaderboardGETApiPermissionTestAphWellnessClubStackAphWellnessClubApi78F58BDAGETgetoverallleaderboardA3DFFD20": {
+   "Type": "AWS::Lambda::Permission",
+   "Properties": {
+    "Action": "lambda:InvokeFunction",
+    "FunctionName": {
+     "Fn::GetAtt": [
+      "ApiHandler5E7490E8",
+      "Arn"
+     ]
+    },
+    "Principal": "apigateway.amazonaws.com",
+    "SourceArn": {
+     "Fn::Join": [
+      "",
+      [
+       "arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":execute-api:us-east-1:160885252259:",
+       {
+        "Ref": "AphWellnessClubApi71C4F1FD"
+       },
+       "/test-invoke-stage/GET/get-overall-leaderboard"
+      ]
+     ]
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "AphWellnessClubStack/AphWellnessClubApi/Default/get-overall-leaderboard/GET/ApiPermission.Test.AphWellnessClubStackAphWellnessClubApi78F58BDA.GET..get-overall-leaderboard"
+   }
+  },
+  "AphWellnessClubApigetoverallleaderboardGET79FD1966": {
+   "Type": "AWS::ApiGateway::Method",
+   "Properties": {
+    "AuthorizationType": "NONE",
+    "HttpMethod": "GET",
+    "Integration": {
+     "IntegrationHttpMethod": "POST",
+     "Type": "AWS_PROXY",
+     "Uri": {
+      "Fn::Join": [
+       "",
+       [
+        "arn:",
+        {
+         "Ref": "AWS::Partition"
+        },
+        ":apigateway:us-east-1:lambda:path/2015-03-31/functions/",
+        {
+         "Fn::GetAtt": [
+          "ApiHandler5E7490E8",
+          "Arn"
+         ]
+        },
+        "/invocations"
+       ]
+      ]
+     }
+    },
+    "ResourceId": {
+     "Ref": "AphWellnessClubApigetoverallleaderboardCAE9B245"
+    },
+    "RestApiId": {
+     "Ref": "AphWellnessClubApi71C4F1FD"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "AphWellnessClubStack/AphWellnessClubApi/Default/get-overall-leaderboard/GET/Resource"
+   }
+  },
+  "AphWellnessClubApigetuserstatBFF3E151": {
+   "Type": "AWS::ApiGateway::Resource",
+   "Properties": {
+    "ParentId": {
+     "Fn::GetAtt": [
+      "AphWellnessClubApi71C4F1FD",
+      "RootResourceId"
+     ]
+    },
+    "PathPart": "get-user-stat",
+    "RestApiId": {
+     "Ref": "AphWellnessClubApi71C4F1FD"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "AphWellnessClubStack/AphWellnessClubApi/Default/get-user-stat/Resource"
+   }
+  },
+  "AphWellnessClubApigetuserstatOPTIONS8DE0E436": {
+   "Type": "AWS::ApiGateway::Method",
+   "Properties": {
+    "ApiKeyRequired": false,
+    "AuthorizationType": "NONE",
+    "HttpMethod": "OPTIONS",
+    "Integration": {
+     "IntegrationResponses": [
+      {
+       "ResponseParameters": {
+        "method.response.header.Access-Control-Allow-Headers": "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token,X-Amz-User-Agent'",
+        "method.response.header.Access-Control-Allow-Origin": "'*'",
+        "method.response.header.Access-Control-Allow-Methods": "'OPTIONS,GET,PUT,POST,DELETE,PATCH,HEAD'"
+       },
+       "StatusCode": "204"
+      }
+     ],
+     "RequestTemplates": {
+      "application/json": "{ statusCode: 200 }"
+     },
+     "Type": "MOCK"
+    },
+    "MethodResponses": [
+     {
+      "ResponseParameters": {
+       "method.response.header.Access-Control-Allow-Headers": true,
+       "method.response.header.Access-Control-Allow-Origin": true,
+       "method.response.header.Access-Control-Allow-Methods": true
+      },
+      "StatusCode": "204"
+     }
+    ],
+    "ResourceId": {
+     "Ref": "AphWellnessClubApigetuserstatBFF3E151"
+    },
+    "RestApiId": {
+     "Ref": "AphWellnessClubApi71C4F1FD"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "AphWellnessClubStack/AphWellnessClubApi/Default/get-user-stat/OPTIONS/Resource"
+   }
+  },
+  "AphWellnessClubApigetuserstatGETApiPermissionAphWellnessClubStackAphWellnessClubApi78F58BDAGETgetuserstat7DC14CE2": {
+   "Type": "AWS::Lambda::Permission",
+   "Properties": {
+    "Action": "lambda:InvokeFunction",
+    "FunctionName": {
+     "Fn::GetAtt": [
+      "ApiHandler5E7490E8",
+      "Arn"
+     ]
+    },
+    "Principal": "apigateway.amazonaws.com",
+    "SourceArn": {
+     "Fn::Join": [
+      "",
+      [
+       "arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":execute-api:us-east-1:160885252259:",
+       {
+        "Ref": "AphWellnessClubApi71C4F1FD"
+       },
+       "/",
+       {
+        "Ref": "AphWellnessClubApiDeploymentStageprod3522B631"
+       },
+       "/GET/get-user-stat"
+      ]
+     ]
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "AphWellnessClubStack/AphWellnessClubApi/Default/get-user-stat/GET/ApiPermission.AphWellnessClubStackAphWellnessClubApi78F58BDA.GET..get-user-stat"
+   }
+  },
+  "AphWellnessClubApigetuserstatGETApiPermissionTestAphWellnessClubStackAphWellnessClubApi78F58BDAGETgetuserstat280D12F4": {
+   "Type": "AWS::Lambda::Permission",
+   "Properties": {
+    "Action": "lambda:InvokeFunction",
+    "FunctionName": {
+     "Fn::GetAtt": [
+      "ApiHandler5E7490E8",
+      "Arn"
+     ]
+    },
+    "Principal": "apigateway.amazonaws.com",
+    "SourceArn": {
+     "Fn::Join": [
+      "",
+      [
+       "arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":execute-api:us-east-1:160885252259:",
+       {
+        "Ref": "AphWellnessClubApi71C4F1FD"
+       },
+       "/test-invoke-stage/GET/get-user-stat"
+      ]
+     ]
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "AphWellnessClubStack/AphWellnessClubApi/Default/get-user-stat/GET/ApiPermission.Test.AphWellnessClubStackAphWellnessClubApi78F58BDA.GET..get-user-stat"
+   }
+  },
+  "AphWellnessClubApigetuserstatGET157C5A4C": {
+   "Type": "AWS::ApiGateway::Method",
+   "Properties": {
+    "AuthorizationType": "NONE",
+    "HttpMethod": "GET",
+    "Integration": {
+     "IntegrationHttpMethod": "POST",
+     "Type": "AWS_PROXY",
+     "Uri": {
+      "Fn::Join": [
+       "",
+       [
+        "arn:",
+        {
+         "Ref": "AWS::Partition"
+        },
+        ":apigateway:us-east-1:lambda:path/2015-03-31/functions/",
+        {
+         "Fn::GetAtt": [
+          "ApiHandler5E7490E8",
+          "Arn"
+         ]
+        },
+        "/invocations"
+       ]
+      ]
+     }
+    },
+    "ResourceId": {
+     "Ref": "AphWellnessClubApigetuserstatBFF3E151"
+    },
+    "RestApiId": {
+     "Ref": "AphWellnessClubApi71C4F1FD"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "AphWellnessClubStack/AphWellnessClubApi/Default/get-user-stat/GET/Resource"
+   }
+  },
+  "AphWellnessClubApicheckindexform75E689B8": {
+   "Type": "AWS::ApiGateway::Resource",
+   "Properties": {
+    "ParentId": {
+     "Fn::GetAtt": [
+      "AphWellnessClubApi71C4F1FD",
+      "RootResourceId"
+     ]
+    },
+    "PathPart": "check-index-form",
+    "RestApiId": {
+     "Ref": "AphWellnessClubApi71C4F1FD"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "AphWellnessClubStack/AphWellnessClubApi/Default/check-index-form/Resource"
+   }
+  },
+  "AphWellnessClubApicheckindexformOPTIONS9F5C8EF8": {
+   "Type": "AWS::ApiGateway::Method",
+   "Properties": {
+    "ApiKeyRequired": false,
+    "AuthorizationType": "NONE",
+    "HttpMethod": "OPTIONS",
+    "Integration": {
+     "IntegrationResponses": [
+      {
+       "ResponseParameters": {
+        "method.response.header.Access-Control-Allow-Headers": "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token,X-Amz-User-Agent'",
+        "method.response.header.Access-Control-Allow-Origin": "'*'",
+        "method.response.header.Access-Control-Allow-Methods": "'OPTIONS,GET,PUT,POST,DELETE,PATCH,HEAD'"
+       },
+       "StatusCode": "204"
+      }
+     ],
+     "RequestTemplates": {
+      "application/json": "{ statusCode: 200 }"
+     },
+     "Type": "MOCK"
+    },
+    "MethodResponses": [
+     {
+      "ResponseParameters": {
+       "method.response.header.Access-Control-Allow-Headers": true,
+       "method.response.header.Access-Control-Allow-Origin": true,
+       "method.response.header.Access-Control-Allow-Methods": true
+      },
+      "StatusCode": "204"
+     }
+    ],
+    "ResourceId": {
+     "Ref": "AphWellnessClubApicheckindexform75E689B8"
+    },
+    "RestApiId": {
+     "Ref": "AphWellnessClubApi71C4F1FD"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "AphWellnessClubStack/AphWellnessClubApi/Default/check-index-form/OPTIONS/Resource"
+   }
+  },
+  "AphWellnessClubApicheckindexformPOSTApiPermissionAphWellnessClubStackAphWellnessClubApi78F58BDAPOSTcheckindexform21597EBB": {
+   "Type": "AWS::Lambda::Permission",
+   "Properties": {
+    "Action": "lambda:InvokeFunction",
+    "FunctionName": {
+     "Fn::GetAtt": [
+      "ApiHandler5E7490E8",
+      "Arn"
+     ]
+    },
+    "Principal": "apigateway.amazonaws.com",
+    "SourceArn": {
+     "Fn::Join": [
+      "",
+      [
+       "arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":execute-api:us-east-1:160885252259:",
+       {
+        "Ref": "AphWellnessClubApi71C4F1FD"
+       },
+       "/",
+       {
+        "Ref": "AphWellnessClubApiDeploymentStageprod3522B631"
+       },
+       "/POST/check-index-form"
+      ]
+     ]
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "AphWellnessClubStack/AphWellnessClubApi/Default/check-index-form/POST/ApiPermission.AphWellnessClubStackAphWellnessClubApi78F58BDA.POST..check-index-form"
+   }
+  },
+  "AphWellnessClubApicheckindexformPOSTApiPermissionTestAphWellnessClubStackAphWellnessClubApi78F58BDAPOSTcheckindexform78627DF1": {
+   "Type": "AWS::Lambda::Permission",
+   "Properties": {
+    "Action": "lambda:InvokeFunction",
+    "FunctionName": {
+     "Fn::GetAtt": [
+      "ApiHandler5E7490E8",
+      "Arn"
+     ]
+    },
+    "Principal": "apigateway.amazonaws.com",
+    "SourceArn": {
+     "Fn::Join": [
+      "",
+      [
+       "arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":execute-api:us-east-1:160885252259:",
+       {
+        "Ref": "AphWellnessClubApi71C4F1FD"
+       },
+       "/test-invoke-stage/POST/check-index-form"
+      ]
+     ]
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "AphWellnessClubStack/AphWellnessClubApi/Default/check-index-form/POST/ApiPermission.Test.AphWellnessClubStackAphWellnessClubApi78F58BDA.POST..check-index-form"
+   }
+  },
+  "AphWellnessClubApicheckindexformPOST09E2219A": {
+   "Type": "AWS::ApiGateway::Method",
+   "Properties": {
+    "AuthorizationType": "NONE",
+    "HttpMethod": "POST",
+    "Integration": {
+     "IntegrationHttpMethod": "POST",
+     "Type": "AWS_PROXY",
+     "Uri": {
+      "Fn::Join": [
+       "",
+       [
+        "arn:",
+        {
+         "Ref": "AWS::Partition"
+        },
+        ":apigateway:us-east-1:lambda:path/2015-03-31/functions/",
+        {
+         "Fn::GetAtt": [
+          "ApiHandler5E7490E8",
+          "Arn"
+         ]
+        },
+        "/invocations"
+       ]
+      ]
+     }
+    },
+    "ResourceId": {
+     "Ref": "AphWellnessClubApicheckindexform75E689B8"
+    },
+    "RestApiId": {
+     "Ref": "AphWellnessClubApi71C4F1FD"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "AphWellnessClubStack/AphWellnessClubApi/Default/check-index-form/POST/Resource"
+   }
+  },
+  "AphWellnessClubApiloginstepsB2F5B133": {
+   "Type": "AWS::ApiGateway::Resource",
+   "Properties": {
+    "ParentId": {
+     "Fn::GetAtt": [
+      "AphWellnessClubApi71C4F1FD",
+      "RootResourceId"
+     ]
+    },
+    "PathPart": "login_steps",
+    "RestApiId": {
+     "Ref": "AphWellnessClubApi71C4F1FD"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "AphWellnessClubStack/AphWellnessClubApi/Default/login_steps/Resource"
+   }
+  },
+  "AphWellnessClubApiloginstepsOPTIONSD6F0ED81": {
+   "Type": "AWS::ApiGateway::Method",
+   "Properties": {
+    "ApiKeyRequired": false,
+    "AuthorizationType": "NONE",
+    "HttpMethod": "OPTIONS",
+    "Integration": {
+     "IntegrationResponses": [
+      {
+       "ResponseParameters": {
+        "method.response.header.Access-Control-Allow-Headers": "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token,X-Amz-User-Agent'",
+        "method.response.header.Access-Control-Allow-Origin": "'*'",
+        "method.response.header.Access-Control-Allow-Methods": "'OPTIONS,GET,PUT,POST,DELETE,PATCH,HEAD'"
+       },
+       "StatusCode": "204"
+      }
+     ],
+     "RequestTemplates": {
+      "application/json": "{ statusCode: 200 }"
+     },
+     "Type": "MOCK"
+    },
+    "MethodResponses": [
+     {
+      "ResponseParameters": {
+       "method.response.header.Access-Control-Allow-Headers": true,
+       "method.response.header.Access-Control-Allow-Origin": true,
+       "method.response.header.Access-Control-Allow-Methods": true
+      },
+      "StatusCode": "204"
+     }
+    ],
+    "ResourceId": {
+     "Ref": "AphWellnessClubApiloginstepsB2F5B133"
+    },
+    "RestApiId": {
+     "Ref": "AphWellnessClubApi71C4F1FD"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "AphWellnessClubStack/AphWellnessClubApi/Default/login_steps/OPTIONS/Resource"
+   }
+  },
+  "AphWellnessClubApiloginstepsPOSTApiPermissionAphWellnessClubStackAphWellnessClubApi78F58BDAPOSTloginsteps19332A44": {
+   "Type": "AWS::Lambda::Permission",
+   "Properties": {
+    "Action": "lambda:InvokeFunction",
+    "FunctionName": {
+     "Fn::GetAtt": [
+      "StepsApiHandler3CFB1098",
+      "Arn"
+     ]
+    },
+    "Principal": "apigateway.amazonaws.com",
+    "SourceArn": {
+     "Fn::Join": [
+      "",
+      [
+       "arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":execute-api:us-east-1:160885252259:",
+       {
+        "Ref": "AphWellnessClubApi71C4F1FD"
+       },
+       "/",
+       {
+        "Ref": "AphWellnessClubApiDeploymentStageprod3522B631"
+       },
+       "/POST/login_steps"
+      ]
+     ]
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "AphWellnessClubStack/AphWellnessClubApi/Default/login_steps/POST/ApiPermission.AphWellnessClubStackAphWellnessClubApi78F58BDA.POST..login_steps"
+   }
+  },
+  "AphWellnessClubApiloginstepsPOSTApiPermissionTestAphWellnessClubStackAphWellnessClubApi78F58BDAPOSTloginsteps5FEABF87": {
+   "Type": "AWS::Lambda::Permission",
+   "Properties": {
+    "Action": "lambda:InvokeFunction",
+    "FunctionName": {
+     "Fn::GetAtt": [
+      "StepsApiHandler3CFB1098",
+      "Arn"
+     ]
+    },
+    "Principal": "apigateway.amazonaws.com",
+    "SourceArn": {
+     "Fn::Join": [
+      "",
+      [
+       "arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":execute-api:us-east-1:160885252259:",
+       {
+        "Ref": "AphWellnessClubApi71C4F1FD"
+       },
+       "/test-invoke-stage/POST/login_steps"
+      ]
+     ]
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "AphWellnessClubStack/AphWellnessClubApi/Default/login_steps/POST/ApiPermission.Test.AphWellnessClubStackAphWellnessClubApi78F58BDA.POST..login_steps"
+   }
+  },
+  "AphWellnessClubApiloginstepsPOST9E936D5A": {
+   "Type": "AWS::ApiGateway::Method",
+   "Properties": {
+    "AuthorizationType": "NONE",
+    "HttpMethod": "POST",
+    "Integration": {
+     "IntegrationHttpMethod": "POST",
+     "Type": "AWS_PROXY",
+     "Uri": {
+      "Fn::Join": [
+       "",
+       [
+        "arn:",
+        {
+         "Ref": "AWS::Partition"
+        },
+        ":apigateway:us-east-1:lambda:path/2015-03-31/functions/",
+        {
+         "Fn::GetAtt": [
+          "StepsApiHandler3CFB1098",
+          "Arn"
+         ]
+        },
+        "/invocations"
+       ]
+      ]
+     }
+    },
+    "ResourceId": {
+     "Ref": "AphWellnessClubApiloginstepsB2F5B133"
+    },
+    "RestApiId": {
+     "Ref": "AphWellnessClubApi71C4F1FD"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "AphWellnessClubStack/AphWellnessClubApi/Default/login_steps/POST/Resource"
+   }
+  },
+  "AphWellnessClubApisubmitsteps1C62274B": {
+   "Type": "AWS::ApiGateway::Resource",
+   "Properties": {
+    "ParentId": {
+     "Fn::GetAtt": [
+      "AphWellnessClubApi71C4F1FD",
+      "RootResourceId"
+     ]
+    },
+    "PathPart": "submit_steps",
+    "RestApiId": {
+     "Ref": "AphWellnessClubApi71C4F1FD"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "AphWellnessClubStack/AphWellnessClubApi/Default/submit_steps/Resource"
+   }
+  },
+  "AphWellnessClubApisubmitstepsOPTIONS2D8B70F4": {
+   "Type": "AWS::ApiGateway::Method",
+   "Properties": {
+    "ApiKeyRequired": false,
+    "AuthorizationType": "NONE",
+    "HttpMethod": "OPTIONS",
+    "Integration": {
+     "IntegrationResponses": [
+      {
+       "ResponseParameters": {
+        "method.response.header.Access-Control-Allow-Headers": "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token,X-Amz-User-Agent'",
+        "method.response.header.Access-Control-Allow-Origin": "'*'",
+        "method.response.header.Access-Control-Allow-Methods": "'OPTIONS,GET,PUT,POST,DELETE,PATCH,HEAD'"
+       },
+       "StatusCode": "204"
+      }
+     ],
+     "RequestTemplates": {
+      "application/json": "{ statusCode: 200 }"
+     },
+     "Type": "MOCK"
+    },
+    "MethodResponses": [
+     {
+      "ResponseParameters": {
+       "method.response.header.Access-Control-Allow-Headers": true,
+       "method.response.header.Access-Control-Allow-Origin": true,
+       "method.response.header.Access-Control-Allow-Methods": true
+      },
+      "StatusCode": "204"
+     }
+    ],
+    "ResourceId": {
+     "Ref": "AphWellnessClubApisubmitsteps1C62274B"
+    },
+    "RestApiId": {
+     "Ref": "AphWellnessClubApi71C4F1FD"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "AphWellnessClubStack/AphWellnessClubApi/Default/submit_steps/OPTIONS/Resource"
+   }
+  },
+  "AphWellnessClubApisubmitstepsPOSTApiPermissionAphWellnessClubStackAphWellnessClubApi78F58BDAPOSTsubmitsteps280044F5": {
+   "Type": "AWS::Lambda::Permission",
+   "Properties": {
+    "Action": "lambda:InvokeFunction",
+    "FunctionName": {
+     "Fn::GetAtt": [
+      "StepsApiHandler3CFB1098",
+      "Arn"
+     ]
+    },
+    "Principal": "apigateway.amazonaws.com",
+    "SourceArn": {
+     "Fn::Join": [
+      "",
+      [
+       "arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":execute-api:us-east-1:160885252259:",
+       {
+        "Ref": "AphWellnessClubApi71C4F1FD"
+       },
+       "/",
+       {
+        "Ref": "AphWellnessClubApiDeploymentStageprod3522B631"
+       },
+       "/POST/submit_steps"
+      ]
+     ]
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "AphWellnessClubStack/AphWellnessClubApi/Default/submit_steps/POST/ApiPermission.AphWellnessClubStackAphWellnessClubApi78F58BDA.POST..submit_steps"
+   }
+  },
+  "AphWellnessClubApisubmitstepsPOSTApiPermissionTestAphWellnessClubStackAphWellnessClubApi78F58BDAPOSTsubmitstepsC41B0238": {
+   "Type": "AWS::Lambda::Permission",
+   "Properties": {
+    "Action": "lambda:InvokeFunction",
+    "FunctionName": {
+     "Fn::GetAtt": [
+      "StepsApiHandler3CFB1098",
+      "Arn"
+     ]
+    },
+    "Principal": "apigateway.amazonaws.com",
+    "SourceArn": {
+     "Fn::Join": [
+      "",
+      [
+       "arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":execute-api:us-east-1:160885252259:",
+       {
+        "Ref": "AphWellnessClubApi71C4F1FD"
+       },
+       "/test-invoke-stage/POST/submit_steps"
+      ]
+     ]
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "AphWellnessClubStack/AphWellnessClubApi/Default/submit_steps/POST/ApiPermission.Test.AphWellnessClubStackAphWellnessClubApi78F58BDA.POST..submit_steps"
+   }
+  },
+  "AphWellnessClubApisubmitstepsPOST0FD0D8B1": {
+   "Type": "AWS::ApiGateway::Method",
+   "Properties": {
+    "AuthorizationType": "NONE",
+    "HttpMethod": "POST",
+    "Integration": {
+     "IntegrationHttpMethod": "POST",
+     "Type": "AWS_PROXY",
+     "Uri": {
+      "Fn::Join": [
+       "",
+       [
+        "arn:",
+        {
+         "Ref": "AWS::Partition"
+        },
+        ":apigateway:us-east-1:lambda:path/2015-03-31/functions/",
+        {
+         "Fn::GetAtt": [
+          "StepsApiHandler3CFB1098",
+          "Arn"
+         ]
+        },
+        "/invocations"
+       ]
+      ]
+     }
+    },
+    "ResourceId": {
+     "Ref": "AphWellnessClubApisubmitsteps1C62274B"
+    },
+    "RestApiId": {
+     "Ref": "AphWellnessClubApi71C4F1FD"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "AphWellnessClubStack/AphWellnessClubApi/Default/submit_steps/POST/Resource"
+   }
+  },
+  "AphWellnessClubApisubmitphotoproof5C8BBBC2": {
+   "Type": "AWS::ApiGateway::Resource",
+   "Properties": {
+    "ParentId": {
+     "Fn::GetAtt": [
+      "AphWellnessClubApi71C4F1FD",
+      "RootResourceId"
+     ]
+    },
+    "PathPart": "submit_photo_proof",
+    "RestApiId": {
+     "Ref": "AphWellnessClubApi71C4F1FD"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "AphWellnessClubStack/AphWellnessClubApi/Default/submit_photo_proof/Resource"
+   }
+  },
+  "AphWellnessClubApisubmitphotoproofOPTIONSB3C95953": {
+   "Type": "AWS::ApiGateway::Method",
+   "Properties": {
+    "ApiKeyRequired": false,
+    "AuthorizationType": "NONE",
+    "HttpMethod": "OPTIONS",
+    "Integration": {
+     "IntegrationResponses": [
+      {
+       "ResponseParameters": {
+        "method.response.header.Access-Control-Allow-Headers": "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token,X-Amz-User-Agent'",
+        "method.response.header.Access-Control-Allow-Origin": "'*'",
+        "method.response.header.Access-Control-Allow-Methods": "'OPTIONS,GET,PUT,POST,DELETE,PATCH,HEAD'"
+       },
+       "StatusCode": "204"
+      }
+     ],
+     "RequestTemplates": {
+      "application/json": "{ statusCode: 200 }"
+     },
+     "Type": "MOCK"
+    },
+    "MethodResponses": [
+     {
+      "ResponseParameters": {
+       "method.response.header.Access-Control-Allow-Headers": true,
+       "method.response.header.Access-Control-Allow-Origin": true,
+       "method.response.header.Access-Control-Allow-Methods": true
+      },
+      "StatusCode": "204"
+     }
+    ],
+    "ResourceId": {
+     "Ref": "AphWellnessClubApisubmitphotoproof5C8BBBC2"
+    },
+    "RestApiId": {
+     "Ref": "AphWellnessClubApi71C4F1FD"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "AphWellnessClubStack/AphWellnessClubApi/Default/submit_photo_proof/OPTIONS/Resource"
+   }
+  },
+  "AphWellnessClubApisubmitphotoproofPOSTApiPermissionAphWellnessClubStackAphWellnessClubApi78F58BDAPOSTsubmitphotoproofFB0C7639": {
+   "Type": "AWS::Lambda::Permission",
+   "Properties": {
+    "Action": "lambda:InvokeFunction",
+    "FunctionName": {
+     "Fn::GetAtt": [
+      "StepsApiHandler3CFB1098",
+      "Arn"
+     ]
+    },
+    "Principal": "apigateway.amazonaws.com",
+    "SourceArn": {
+     "Fn::Join": [
+      "",
+      [
+       "arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":execute-api:us-east-1:160885252259:",
+       {
+        "Ref": "AphWellnessClubApi71C4F1FD"
+       },
+       "/",
+       {
+        "Ref": "AphWellnessClubApiDeploymentStageprod3522B631"
+       },
+       "/POST/submit_photo_proof"
+      ]
+     ]
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "AphWellnessClubStack/AphWellnessClubApi/Default/submit_photo_proof/POST/ApiPermission.AphWellnessClubStackAphWellnessClubApi78F58BDA.POST..submit_photo_proof"
+   }
+  },
+  "AphWellnessClubApisubmitphotoproofPOSTApiPermissionTestAphWellnessClubStackAphWellnessClubApi78F58BDAPOSTsubmitphotoproof966627AB": {
+   "Type": "AWS::Lambda::Permission",
+   "Properties": {
+    "Action": "lambda:InvokeFunction",
+    "FunctionName": {
+     "Fn::GetAtt": [
+      "StepsApiHandler3CFB1098",
+      "Arn"
+     ]
+    },
+    "Principal": "apigateway.amazonaws.com",
+    "SourceArn": {
+     "Fn::Join": [
+      "",
+      [
+       "arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":execute-api:us-east-1:160885252259:",
+       {
+        "Ref": "AphWellnessClubApi71C4F1FD"
+       },
+       "/test-invoke-stage/POST/submit_photo_proof"
+      ]
+     ]
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "AphWellnessClubStack/AphWellnessClubApi/Default/submit_photo_proof/POST/ApiPermission.Test.AphWellnessClubStackAphWellnessClubApi78F58BDA.POST..submit_photo_proof"
+   }
+  },
+  "AphWellnessClubApisubmitphotoproofPOST0CC8813F": {
+   "Type": "AWS::ApiGateway::Method",
+   "Properties": {
+    "AuthorizationType": "NONE",
+    "HttpMethod": "POST",
+    "Integration": {
+     "IntegrationHttpMethod": "POST",
+     "Type": "AWS_PROXY",
+     "Uri": {
+      "Fn::Join": [
+       "",
+       [
+        "arn:",
+        {
+         "Ref": "AWS::Partition"
+        },
+        ":apigateway:us-east-1:lambda:path/2015-03-31/functions/",
+        {
+         "Fn::GetAtt": [
+          "StepsApiHandler3CFB1098",
+          "Arn"
+         ]
+        },
+        "/invocations"
+       ]
+      ]
+     }
+    },
+    "ResourceId": {
+     "Ref": "AphWellnessClubApisubmitphotoproof5C8BBBC2"
+    },
+    "RestApiId": {
+     "Ref": "AphWellnessClubApi71C4F1FD"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "AphWellnessClubStack/AphWellnessClubApi/Default/submit_photo_proof/POST/Resource"
+   }
+  },
+  "AphWellnessClubApioverallstepsleaderboardC10F7B08": {
+   "Type": "AWS::ApiGateway::Resource",
+   "Properties": {
+    "ParentId": {
+     "Fn::GetAtt": [
+      "AphWellnessClubApi71C4F1FD",
+      "RootResourceId"
+     ]
+    },
+    "PathPart": "overall_steps_leaderboard",
+    "RestApiId": {
+     "Ref": "AphWellnessClubApi71C4F1FD"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "AphWellnessClubStack/AphWellnessClubApi/Default/overall_steps_leaderboard/Resource"
+   }
+  },
+  "AphWellnessClubApioverallstepsleaderboardOPTIONS95A27A9A": {
+   "Type": "AWS::ApiGateway::Method",
+   "Properties": {
+    "ApiKeyRequired": false,
+    "AuthorizationType": "NONE",
+    "HttpMethod": "OPTIONS",
+    "Integration": {
+     "IntegrationResponses": [
+      {
+       "ResponseParameters": {
+        "method.response.header.Access-Control-Allow-Headers": "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token,X-Amz-User-Agent'",
+        "method.response.header.Access-Control-Allow-Origin": "'*'",
+        "method.response.header.Access-Control-Allow-Methods": "'OPTIONS,GET,PUT,POST,DELETE,PATCH,HEAD'"
+       },
+       "StatusCode": "204"
+      }
+     ],
+     "RequestTemplates": {
+      "application/json": "{ statusCode: 200 }"
+     },
+     "Type": "MOCK"
+    },
+    "MethodResponses": [
+     {
+      "ResponseParameters": {
+       "method.response.header.Access-Control-Allow-Headers": true,
+       "method.response.header.Access-Control-Allow-Origin": true,
+       "method.response.header.Access-Control-Allow-Methods": true
+      },
+      "StatusCode": "204"
+     }
+    ],
+    "ResourceId": {
+     "Ref": "AphWellnessClubApioverallstepsleaderboardC10F7B08"
+    },
+    "RestApiId": {
+     "Ref": "AphWellnessClubApi71C4F1FD"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "AphWellnessClubStack/AphWellnessClubApi/Default/overall_steps_leaderboard/OPTIONS/Resource"
+   }
+  },
+  "AphWellnessClubApioverallstepsleaderboardGETApiPermissionAphWellnessClubStackAphWellnessClubApi78F58BDAGEToverallstepsleaderboard12AB5DC8": {
+   "Type": "AWS::Lambda::Permission",
+   "Properties": {
+    "Action": "lambda:InvokeFunction",
+    "FunctionName": {
+     "Fn::GetAtt": [
+      "StepsApiHandler3CFB1098",
+      "Arn"
+     ]
+    },
+    "Principal": "apigateway.amazonaws.com",
+    "SourceArn": {
+     "Fn::Join": [
+      "",
+      [
+       "arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":execute-api:us-east-1:160885252259:",
+       {
+        "Ref": "AphWellnessClubApi71C4F1FD"
+       },
+       "/",
+       {
+        "Ref": "AphWellnessClubApiDeploymentStageprod3522B631"
+       },
+       "/GET/overall_steps_leaderboard"
+      ]
+     ]
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "AphWellnessClubStack/AphWellnessClubApi/Default/overall_steps_leaderboard/GET/ApiPermission.AphWellnessClubStackAphWellnessClubApi78F58BDA.GET..overall_steps_leaderboard"
+   }
+  },
+  "AphWellnessClubApioverallstepsleaderboardGETApiPermissionTestAphWellnessClubStackAphWellnessClubApi78F58BDAGEToverallstepsleaderboardA2F70528": {
+   "Type": "AWS::Lambda::Permission",
+   "Properties": {
+    "Action": "lambda:InvokeFunction",
+    "FunctionName": {
+     "Fn::GetAtt": [
+      "StepsApiHandler3CFB1098",
+      "Arn"
+     ]
+    },
+    "Principal": "apigateway.amazonaws.com",
+    "SourceArn": {
+     "Fn::Join": [
+      "",
+      [
+       "arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":execute-api:us-east-1:160885252259:",
+       {
+        "Ref": "AphWellnessClubApi71C4F1FD"
+       },
+       "/test-invoke-stage/GET/overall_steps_leaderboard"
+      ]
+     ]
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "AphWellnessClubStack/AphWellnessClubApi/Default/overall_steps_leaderboard/GET/ApiPermission.Test.AphWellnessClubStackAphWellnessClubApi78F58BDA.GET..overall_steps_leaderboard"
+   }
+  },
+  "AphWellnessClubApioverallstepsleaderboardGETF14D3FD9": {
+   "Type": "AWS::ApiGateway::Method",
+   "Properties": {
+    "AuthorizationType": "NONE",
+    "HttpMethod": "GET",
+    "Integration": {
+     "IntegrationHttpMethod": "POST",
+     "Type": "AWS_PROXY",
+     "Uri": {
+      "Fn::Join": [
+       "",
+       [
+        "arn:",
+        {
+         "Ref": "AWS::Partition"
+        },
+        ":apigateway:us-east-1:lambda:path/2015-03-31/functions/",
+        {
+         "Fn::GetAtt": [
+          "StepsApiHandler3CFB1098",
+          "Arn"
+         ]
+        },
+        "/invocations"
+       ]
+      ]
+     }
+    },
+    "ResourceId": {
+     "Ref": "AphWellnessClubApioverallstepsleaderboardC10F7B08"
+    },
+    "RestApiId": {
+     "Ref": "AphWellnessClubApi71C4F1FD"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "AphWellnessClubStack/AphWellnessClubApi/Default/overall_steps_leaderboard/GET/Resource"
+   }
+  },
+  "AphWellnessClubApiweeklystepsleaderboard5F3C3A1B": {
+   "Type": "AWS::ApiGateway::Resource",
+   "Properties": {
+    "ParentId": {
+     "Fn::GetAtt": [
+      "AphWellnessClubApi71C4F1FD",
+      "RootResourceId"
+     ]
+    },
+    "PathPart": "weekly_steps_leaderboard",
+    "RestApiId": {
+     "Ref": "AphWellnessClubApi71C4F1FD"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "AphWellnessClubStack/AphWellnessClubApi/Default/weekly_steps_leaderboard/Resource"
+   }
+  },
+  "AphWellnessClubApiweeklystepsleaderboardOPTIONS66B709A0": {
+   "Type": "AWS::ApiGateway::Method",
+   "Properties": {
+    "ApiKeyRequired": false,
+    "AuthorizationType": "NONE",
+    "HttpMethod": "OPTIONS",
+    "Integration": {
+     "IntegrationResponses": [
+      {
+       "ResponseParameters": {
+        "method.response.header.Access-Control-Allow-Headers": "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token,X-Amz-User-Agent'",
+        "method.response.header.Access-Control-Allow-Origin": "'*'",
+        "method.response.header.Access-Control-Allow-Methods": "'OPTIONS,GET,PUT,POST,DELETE,PATCH,HEAD'"
+       },
+       "StatusCode": "204"
+      }
+     ],
+     "RequestTemplates": {
+      "application/json": "{ statusCode: 200 }"
+     },
+     "Type": "MOCK"
+    },
+    "MethodResponses": [
+     {
+      "ResponseParameters": {
+       "method.response.header.Access-Control-Allow-Headers": true,
+       "method.response.header.Access-Control-Allow-Origin": true,
+       "method.response.header.Access-Control-Allow-Methods": true
+      },
+      "StatusCode": "204"
+     }
+    ],
+    "ResourceId": {
+     "Ref": "AphWellnessClubApiweeklystepsleaderboard5F3C3A1B"
+    },
+    "RestApiId": {
+     "Ref": "AphWellnessClubApi71C4F1FD"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "AphWellnessClubStack/AphWellnessClubApi/Default/weekly_steps_leaderboard/OPTIONS/Resource"
+   }
+  },
+  "AphWellnessClubApiweeklystepsleaderboardGETApiPermissionAphWellnessClubStackAphWellnessClubApi78F58BDAGETweeklystepsleaderboardAC664B5B": {
+   "Type": "AWS::Lambda::Permission",
+   "Properties": {
+    "Action": "lambda:InvokeFunction",
+    "FunctionName": {
+     "Fn::GetAtt": [
+      "StepsApiHandler3CFB1098",
+      "Arn"
+     ]
+    },
+    "Principal": "apigateway.amazonaws.com",
+    "SourceArn": {
+     "Fn::Join": [
+      "",
+      [
+       "arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":execute-api:us-east-1:160885252259:",
+       {
+        "Ref": "AphWellnessClubApi71C4F1FD"
+       },
+       "/",
+       {
+        "Ref": "AphWellnessClubApiDeploymentStageprod3522B631"
+       },
+       "/GET/weekly_steps_leaderboard"
+      ]
+     ]
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "AphWellnessClubStack/AphWellnessClubApi/Default/weekly_steps_leaderboard/GET/ApiPermission.AphWellnessClubStackAphWellnessClubApi78F58BDA.GET..weekly_steps_leaderboard"
+   }
+  },
+  "AphWellnessClubApiweeklystepsleaderboardGETApiPermissionTestAphWellnessClubStackAphWellnessClubApi78F58BDAGETweeklystepsleaderboardA73AF11D": {
+   "Type": "AWS::Lambda::Permission",
+   "Properties": {
+    "Action": "lambda:InvokeFunction",
+    "FunctionName": {
+     "Fn::GetAtt": [
+      "StepsApiHandler3CFB1098",
+      "Arn"
+     ]
+    },
+    "Principal": "apigateway.amazonaws.com",
+    "SourceArn": {
+     "Fn::Join": [
+      "",
+      [
+       "arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":execute-api:us-east-1:160885252259:",
+       {
+        "Ref": "AphWellnessClubApi71C4F1FD"
+       },
+       "/test-invoke-stage/GET/weekly_steps_leaderboard"
+      ]
+     ]
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "AphWellnessClubStack/AphWellnessClubApi/Default/weekly_steps_leaderboard/GET/ApiPermission.Test.AphWellnessClubStackAphWellnessClubApi78F58BDA.GET..weekly_steps_leaderboard"
+   }
+  },
+  "AphWellnessClubApiweeklystepsleaderboardGET702028CB": {
+   "Type": "AWS::ApiGateway::Method",
+   "Properties": {
+    "AuthorizationType": "NONE",
+    "HttpMethod": "GET",
+    "Integration": {
+     "IntegrationHttpMethod": "POST",
+     "Type": "AWS_PROXY",
+     "Uri": {
+      "Fn::Join": [
+       "",
+       [
+        "arn:",
+        {
+         "Ref": "AWS::Partition"
+        },
+        ":apigateway:us-east-1:lambda:path/2015-03-31/functions/",
+        {
+         "Fn::GetAtt": [
+          "StepsApiHandler3CFB1098",
+          "Arn"
+         ]
+        },
+        "/invocations"
+       ]
+      ]
+     }
+    },
+    "ResourceId": {
+     "Ref": "AphWellnessClubApiweeklystepsleaderboard5F3C3A1B"
+    },
+    "RestApiId": {
+     "Ref": "AphWellnessClubApi71C4F1FD"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "AphWellnessClubStack/AphWellnessClubApi/Default/weekly_steps_leaderboard/GET/Resource"
+   }
+  },
+  "AphWellnessClubApiuserstepsstatsAF24F4AC": {
+   "Type": "AWS::ApiGateway::Resource",
+   "Properties": {
+    "ParentId": {
+     "Fn::GetAtt": [
+      "AphWellnessClubApi71C4F1FD",
+      "RootResourceId"
+     ]
+    },
+    "PathPart": "user_steps_stats",
+    "RestApiId": {
+     "Ref": "AphWellnessClubApi71C4F1FD"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "AphWellnessClubStack/AphWellnessClubApi/Default/user_steps_stats/Resource"
+   }
+  },
+  "AphWellnessClubApiuserstepsstatsOPTIONSD38154A1": {
+   "Type": "AWS::ApiGateway::Method",
+   "Properties": {
+    "ApiKeyRequired": false,
+    "AuthorizationType": "NONE",
+    "HttpMethod": "OPTIONS",
+    "Integration": {
+     "IntegrationResponses": [
+      {
+       "ResponseParameters": {
+        "method.response.header.Access-Control-Allow-Headers": "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token,X-Amz-User-Agent'",
+        "method.response.header.Access-Control-Allow-Origin": "'*'",
+        "method.response.header.Access-Control-Allow-Methods": "'OPTIONS,GET,PUT,POST,DELETE,PATCH,HEAD'"
+       },
+       "StatusCode": "204"
+      }
+     ],
+     "RequestTemplates": {
+      "application/json": "{ statusCode: 200 }"
+     },
+     "Type": "MOCK"
+    },
+    "MethodResponses": [
+     {
+      "ResponseParameters": {
+       "method.response.header.Access-Control-Allow-Headers": true,
+       "method.response.header.Access-Control-Allow-Origin": true,
+       "method.response.header.Access-Control-Allow-Methods": true
+      },
+      "StatusCode": "204"
+     }
+    ],
+    "ResourceId": {
+     "Ref": "AphWellnessClubApiuserstepsstatsAF24F4AC"
+    },
+    "RestApiId": {
+     "Ref": "AphWellnessClubApi71C4F1FD"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "AphWellnessClubStack/AphWellnessClubApi/Default/user_steps_stats/OPTIONS/Resource"
+   }
+  },
+  "AphWellnessClubApiuserstepsstatsusername3AE43726": {
+   "Type": "AWS::ApiGateway::Resource",
+   "Properties": {
+    "ParentId": {
+     "Ref": "AphWellnessClubApiuserstepsstatsAF24F4AC"
+    },
+    "PathPart": "{username}",
+    "RestApiId": {
+     "Ref": "AphWellnessClubApi71C4F1FD"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "AphWellnessClubStack/AphWellnessClubApi/Default/user_steps_stats/{username}/Resource"
+   }
+  },
+  "AphWellnessClubApiuserstepsstatsusernameOPTIONSCF1DB773": {
+   "Type": "AWS::ApiGateway::Method",
+   "Properties": {
+    "ApiKeyRequired": false,
+    "AuthorizationType": "NONE",
+    "HttpMethod": "OPTIONS",
+    "Integration": {
+     "IntegrationResponses": [
+      {
+       "ResponseParameters": {
+        "method.response.header.Access-Control-Allow-Headers": "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token,X-Amz-User-Agent'",
+        "method.response.header.Access-Control-Allow-Origin": "'*'",
+        "method.response.header.Access-Control-Allow-Methods": "'OPTIONS,GET,PUT,POST,DELETE,PATCH,HEAD'"
+       },
+       "StatusCode": "204"
+      }
+     ],
+     "RequestTemplates": {
+      "application/json": "{ statusCode: 200 }"
+     },
+     "Type": "MOCK"
+    },
+    "MethodResponses": [
+     {
+      "ResponseParameters": {
+       "method.response.header.Access-Control-Allow-Headers": true,
+       "method.response.header.Access-Control-Allow-Origin": true,
+       "method.response.header.Access-Control-Allow-Methods": true
+      },
+      "StatusCode": "204"
+     }
+    ],
+    "ResourceId": {
+     "Ref": "AphWellnessClubApiuserstepsstatsusername3AE43726"
+    },
+    "RestApiId": {
+     "Ref": "AphWellnessClubApi71C4F1FD"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "AphWellnessClubStack/AphWellnessClubApi/Default/user_steps_stats/{username}/OPTIONS/Resource"
+   }
+  },
+  "AphWellnessClubApiuserstepsstatsusernameGETApiPermissionAphWellnessClubStackAphWellnessClubApi78F58BDAGETuserstepsstatsusernameA32A8E29": {
+   "Type": "AWS::Lambda::Permission",
+   "Properties": {
+    "Action": "lambda:InvokeFunction",
+    "FunctionName": {
+     "Fn::GetAtt": [
+      "StepsApiHandler3CFB1098",
+      "Arn"
+     ]
+    },
+    "Principal": "apigateway.amazonaws.com",
+    "SourceArn": {
+     "Fn::Join": [
+      "",
+      [
+       "arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":execute-api:us-east-1:160885252259:",
+       {
+        "Ref": "AphWellnessClubApi71C4F1FD"
+       },
+       "/",
+       {
+        "Ref": "AphWellnessClubApiDeploymentStageprod3522B631"
+       },
+       "/GET/user_steps_stats/*"
+      ]
+     ]
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "AphWellnessClubStack/AphWellnessClubApi/Default/user_steps_stats/{username}/GET/ApiPermission.AphWellnessClubStackAphWellnessClubApi78F58BDA.GET..user_steps_stats.{username}"
+   }
+  },
+  "AphWellnessClubApiuserstepsstatsusernameGETApiPermissionTestAphWellnessClubStackAphWellnessClubApi78F58BDAGETuserstepsstatsusernameB4C06B19": {
+   "Type": "AWS::Lambda::Permission",
+   "Properties": {
+    "Action": "lambda:InvokeFunction",
+    "FunctionName": {
+     "Fn::GetAtt": [
+      "StepsApiHandler3CFB1098",
+      "Arn"
+     ]
+    },
+    "Principal": "apigateway.amazonaws.com",
+    "SourceArn": {
+     "Fn::Join": [
+      "",
+      [
+       "arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":execute-api:us-east-1:160885252259:",
+       {
+        "Ref": "AphWellnessClubApi71C4F1FD"
+       },
+       "/test-invoke-stage/GET/user_steps_stats/*"
+      ]
+     ]
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "AphWellnessClubStack/AphWellnessClubApi/Default/user_steps_stats/{username}/GET/ApiPermission.Test.AphWellnessClubStackAphWellnessClubApi78F58BDA.GET..user_steps_stats.{username}"
+   }
+  },
+  "AphWellnessClubApiuserstepsstatsusernameGET303D0740": {
+   "Type": "AWS::ApiGateway::Method",
+   "Properties": {
+    "AuthorizationType": "NONE",
+    "HttpMethod": "GET",
+    "Integration": {
+     "IntegrationHttpMethod": "POST",
+     "Type": "AWS_PROXY",
+     "Uri": {
+      "Fn::Join": [
+       "",
+       [
+        "arn:",
+        {
+         "Ref": "AWS::Partition"
+        },
+        ":apigateway:us-east-1:lambda:path/2015-03-31/functions/",
+        {
+         "Fn::GetAtt": [
+          "StepsApiHandler3CFB1098",
+          "Arn"
+         ]
+        },
+        "/invocations"
+       ]
+      ]
+     }
+    },
+    "ResourceId": {
+     "Ref": "AphWellnessClubApiuserstepsstatsusername3AE43726"
+    },
+    "RestApiId": {
+     "Ref": "AphWellnessClubApi71C4F1FD"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "AphWellnessClubStack/AphWellnessClubApi/Default/user_steps_stats/{username}/GET/Resource"
+   }
+  },
+  "AphWellnessClubOAC": {
+   "Type": "AWS::CloudFront::OriginAccessControl",
+   "Properties": {
+    "OriginAccessControlConfig": {
+     "Name": "OAC-aphwellnessclubdev.stashbysam.com",
+     "OriginAccessControlOriginType": "s3",
+     "SigningBehavior": "always",
+     "SigningProtocol": "sigv4"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "AphWellnessClubStack/AphWellnessClubOAC"
+   }
+  },
+  "AphWellnessClubDistribution5EC2D170": {
+   "Type": "AWS::CloudFront::Distribution",
+   "Properties": {
+    "DistributionConfig": {
+     "Aliases": [
+      "aphwellnessclubdev.stashbysam.com"
+     ],
+     "Comment": "Distribution for aphwellnessclubdev.stashbysam.com",
+     "DefaultCacheBehavior": {
+      "CachePolicyId": "658327ea-f89d-4fab-a63d-7e88639e58f6",
+      "Compress": true,
+      "TargetOriginId": "AphWellnessClubStackAphWellnessClubDistributionOrigin13541E6AE",
+      "ViewerProtocolPolicy": "redirect-to-https"
+     },
+     "DefaultRootObject": "index.html",
+     "Enabled": true,
+     "HttpVersion": "http2",
+     "IPV6Enabled": true,
+     "Origins": [
+      {
+       "DomainName": {
+        "Fn::GetAtt": [
+         "AphWellnessClubBucketEF289B9B",
+         "RegionalDomainName"
+        ]
+       },
+       "Id": "AphWellnessClubStackAphWellnessClubDistributionOrigin13541E6AE",
+       "OriginAccessControlId": {
+        "Fn::GetAtt": [
+         "AphWellnessClubOAC",
+         "Id"
+        ]
+       },
+       "S3OriginConfig": {
+        "OriginAccessIdentity": ""
+       }
+      }
+     ],
+     "ViewerCertificate": {
+      "AcmCertificateArn": "arn:aws:acm:us-east-1:160885252259:certificate/8e7d9b94-c3fd-4d2c-a60e-987d2451394f",
+      "MinimumProtocolVersion": "TLSv1.2_2021",
+      "SslSupportMethod": "sni-only"
+     }
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "AphWellnessClubStack/AphWellnessClubDistribution/Resource"
+   }
+  },
+  "ApexARecord821D42AD": {
+   "Type": "AWS::Route53::RecordSet",
+   "Properties": {
+    "AliasTarget": {
+     "DNSName": {
+      "Fn::GetAtt": [
+       "AphWellnessClubDistribution5EC2D170",
+       "DomainName"
+      ]
+     },
+     "HostedZoneId": {
+      "Fn::FindInMap": [
+       "AWSCloudFrontPartitionHostedZoneIdMap",
+       {
+        "Ref": "AWS::Partition"
+       },
+       "zoneId"
+      ]
+     }
+    },
+    "HostedZoneId": "Z04414971F9FAWQ209TFO",
+    "Name": "aphwellnessclubdev.stashbysam.com.",
+    "Type": "A"
+   },
+   "Metadata": {
+    "aws:cdk:path": "AphWellnessClubStack/ApexARecord/Resource"
+   }
+  },
+  "ApexAAAARecord50C93F6D": {
+   "Type": "AWS::Route53::RecordSet",
+   "Properties": {
+    "AliasTarget": {
+     "DNSName": {
+      "Fn::GetAtt": [
+       "AphWellnessClubDistribution5EC2D170",
+       "DomainName"
+      ]
+     },
+     "HostedZoneId": {
+      "Fn::FindInMap": [
+       "AWSCloudFrontPartitionHostedZoneIdMap",
+       {
+        "Ref": "AWS::Partition"
+       },
+       "zoneId"
+      ]
+     }
+    },
+    "HostedZoneId": "Z04414971F9FAWQ209TFO",
+    "Name": "aphwellnessclubdev.stashbysam.com.",
+    "Type": "AAAA"
+   },
+   "Metadata": {
+    "aws:cdk:path": "AphWellnessClubStack/ApexAAAARecord/Resource"
+   }
+  },
+  "CDKMetadata": {
+   "Type": "AWS::CDK::Metadata",
+   "Properties": {
+    "Analytics": "v2:deflate64:H4sIAAAAAAAA/02QQW/CMAyFfwv3kG1Uk7ZjAe2GqMruyE1N8WiTKnGEqij/fUpaBKf3vdiJ/bKRH1/f8n0Fd7dW7W3dUyPDiUHdxO6iK7AwIKMVcHfn4AoZtl7dkFNxoVkq05OanseLn80WHEbRThoG0zYy/ELTY+rNEEUPQ9OCDD9eKyajU+mVK7QDOUdGR0EwyFCb+X7W5+iZonDFGZxDdrJMImCkDhjvMMlQo+NypHz7iaVSxmsWexx7Mw2oc8IXd2Lo8sgZanTGW4UpmTggX02bigs9qsuQzFGo3vj2Yo1mGXYXfbTUURqMzu2MZmt6sSfHlhr/CP7qo7DGM34WMpQ1KmPb+flEJ2RRAsDsYnxukD8g7Uy6S/1Hz6PP4Q4wjqS7KKqJr0a/FfKjkJvVnyNaW6+ZBpT1rP8vwN8hJQIAAA=="
+   },
+   "Metadata": {
+    "aws:cdk:path": "AphWellnessClubStack/CDKMetadata/Default"
+   }
+  }
+ },
+ "Outputs": {
+  "AphWellnessClubApiEndpoint51FE5C56": {
+   "Value": {
+    "Fn::Join": [
+     "",
+     [
+      "https://",
+      {
+       "Ref": "AphWellnessClubApi71C4F1FD"
+      },
+      ".execute-api.us-east-1.",
+      {
+       "Ref": "AWS::URLSuffix"
+      },
+      "/",
+      {
+       "Ref": "AphWellnessClubApiDeploymentStageprod3522B631"
+      },
+      "/"
+     ]
+    ]
+   }
+  },
+  "BucketName": {
+   "Value": {
+    "Ref": "AphWellnessClubBucketEF289B9B"
+   }
+  },
+  "DistributionDomainName": {
+   "Value": {
+    "Fn::GetAtt": [
+     "AphWellnessClubDistribution5EC2D170",
+     "DomainName"
+    ]
+   }
+  },
+  "DistributionId": {
+   "Value": {
+    "Ref": "AphWellnessClubDistribution5EC2D170"
+   }
+  },
+  "ApiEndpoint": {
+   "Value": {
+    "Fn::Join": [
+     "",
+     [
+      "https://",
+      {
+       "Ref": "AphWellnessClubApi71C4F1FD"
+      },
+      ".execute-api.us-east-1.",
+      {
+       "Ref": "AWS::URLSuffix"
+      },
+      "/",
+      {
+       "Ref": "AphWellnessClubApiDeploymentStageprod3522B631"
+      },
+      "/",
+      {
+       "Ref": "Stage"
+      },
+      "/"
+     ]
+    ]
+   }
+  },
+  "WeightsTableName": {
+   "Value": {
+    "Ref": "WeightsTableA0241212"
+   }
+  },
+  "StepsTableName": {
+   "Value": {
+    "Ref": "StepsTableF5F5879D"
+   }
+  },
+  "StepsPhotoBucketName": {
+   "Value": {
+    "Ref": "StepsPhotoBucketD7504056"
+   }
+  },
+  "DeploymentStage": {
+   "Value": {
+    "Ref": "Stage"
+   }
+  }
+ },
+ "Mappings": {
+  "AWSCloudFrontPartitionHostedZoneIdMap": {
+   "aws": {
+    "zoneId": "Z2FDTNDATAQYW2"
+   },
+   "aws-cn": {
+    "zoneId": "Z3RFFRIM2A3IF5"
+   }
+  }
+ },
+ "Rules": {
+  "CheckBootstrapVersion": {
+   "Assertions": [
+    {
+     "Assert": {
+      "Fn::Not": [
+       {
+        "Fn::Contains": [
+         [
+          "1",
+          "2",
+          "3",
+          "4",
+          "5"
+         ],
+         {
+          "Ref": "BootstrapVersion"
+         }
+        ]
+       }
+      ]
+     },
+     "AssertDescription": "CDK bootstrap stack version 6 required. Please run 'cdk bootstrap' with a recent version of the CDK CLI."
+    }
+   ]
+  }
+ }
+}
