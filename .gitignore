@@ -6,3 +6,4 @@ DynamoDB_Weights.json
 initial_weighin.py
 /cdk.out
 aws-cdk.yaml
+cdk.context.json
