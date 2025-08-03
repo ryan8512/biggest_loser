@@ -10,6 +10,7 @@ const isLocal = process.env.AWS_SAM_LOCAL === 'true';
 
 let dynamoDb = null;
 let dynamoDbService = null;
+const TABLE_NAME = process.env.WEIGHTS_TABLE || 'Weights';
 
 if(isLocal){
     dynamoDb = new AWS.DynamoDB.DocumentClient({
@@ -28,7 +29,7 @@ if(isLocal){
 async function createTable() {
     if(!isLocal) return;
     const params = {
-        TableName: 'Weights',
+        TableName: TABLE_NAME,
         AttributeDefinitions: [
             { AttributeName: 'username', AttributeType: 'S' },
             { AttributeName: 'date', AttributeType: 'S' }
@@ -171,7 +172,7 @@ const checkWeight = async (event) => {
 
         // Save data to DynamoDB
         const params = {
-            TableName: 'Weights', 
+            TableName: TABLE_NAME, 
             Item: {
                 username: user.username, // Use username from the verified token
                 date: formattedDate.toISOString(),
@@ -222,7 +223,7 @@ const getOverallLeaderboard = async () => {
         const endOfInitialWeek = initialWeekDate.clone().endOf('week').toISOString();  // End of initial week
 
         const paramsCurrent = {
-            TableName: 'Weights',
+            TableName: TABLE_NAME,
             FilterExpression: '#date >= :currentStartOfWeek AND #date <= :currentEndOfWeek',
             ExpressionAttributeNames: {
                 '#date': 'date',  // Map #date to the reserved word 'date'
@@ -234,7 +235,7 @@ const getOverallLeaderboard = async () => {
         };
 
         const paramsinitialWeek = {
-            TableName: 'Weights',
+            TableName: TABLE_NAME,
             FilterExpression: '#date >= :initialWeekStartOfWeek AND #date <= :initialWeekEndOfWeek',
             ExpressionAttributeNames: {
                 '#date': 'date',  // Map #date to the reserved word 'date'
@@ -246,7 +247,7 @@ const getOverallLeaderboard = async () => {
         };
 
         const paramsLastWeek = {
-            TableName: 'Weights',
+            TableName: TABLE_NAME,
             FilterExpression: '#date >= :lastWeekStartOfWeek AND #date <= :lastWeekEndOfWeek',
             ExpressionAttributeNames: {
                 '#date': 'date',  // Map #date to the reserved word 'date'
@@ -319,7 +320,7 @@ const getWeeklyLeaderboard = async () => {
         const endOfInitialWeek = initialWeekDate.clone().endOf('week').toISOString();  // End of initial week
 
         const paramsCurrent = {
-            TableName: 'Weights',
+            TableName: TABLE_NAME,
             FilterExpression: '#date >= :currentStartOfWeek AND #date <= :currentEndOfWeek',
             ExpressionAttributeNames: {
                 '#date': 'date',  // Map #date to the reserved word 'date'
@@ -331,7 +332,7 @@ const getWeeklyLeaderboard = async () => {
         };
 
         const paramsLastWeek = {
-            TableName: 'Weights',
+            TableName: TABLE_NAME,
             FilterExpression: '#date >= :lastWeekStartOfWeek AND #date <= :lastWeekEndOfWeek',
             ExpressionAttributeNames: {
                 '#date': 'date',  // Map #date to the reserved word 'date'
@@ -491,7 +492,7 @@ const getUserStat = async (event) => {
     try {
         // Query parameters to retrieve the most recent record for the given user
         const params = {
-            TableName: 'Weights',
+            TableName: TABLE_NAME,
             KeyConditionExpression: '#username = :username',  // Query by username
             ExpressionAttributeNames: {
                 '#username': 'username',  // Map #username to the reserved word 'username'

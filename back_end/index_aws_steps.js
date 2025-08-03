@@ -8,6 +8,7 @@ const BUCKET_NAME = 'biggestloser8152-steps'; // S3 bucket for steps photos
 let dynamoDb = null;
 let dynamoDbService = null;
 const s3 = new AWS.S3();
+const TABLE_NAME = process.env.STEPS_TABLE || 'Steps';
 
 if(isLocal){
     dynamoDb = new AWS.DynamoDB.DocumentClient({
@@ -26,7 +27,7 @@ if(isLocal){
 async function createTable() {
     if(!isLocal) return;
     const params = {
-        TableName: 'Steps',
+        TableName: TABLE_NAME,
         AttributeDefinitions: [
             { AttributeName: 'username', AttributeType: 'S' },
             { AttributeName: 'date', AttributeType: 'S' }
@@ -168,7 +169,7 @@ const submitSteps = async (event) => {
         }
 
         const params = {
-            TableName: 'Steps',
+            TableName: TABLE_NAME,
             Item: {
                 username: user.username,
                 date: date,
@@ -335,7 +336,7 @@ const getOverallStepsLeaderboard = async (event) => {
         const endOfMonth = targetDate.clone().endOf('month').format('YYYY-MM-DD');
 
         const params = {
-            TableName: 'Steps',
+            TableName: TABLE_NAME,
             FilterExpression: '#date >= :startOfMonth AND #date <= :endOfMonth',
             ExpressionAttributeNames: {
                 '#date': 'date',
@@ -371,7 +372,7 @@ const getWeeklyStepsLeaderboard = async (event) => {
         const endOfWeek = targetDate.clone().endOf('week').format('YYYY-MM-DD');
 
         const params = {
-            TableName: 'Steps',
+            TableName: TABLE_NAME,
             FilterExpression: '#date >= :startOfWeek AND #date <= :endOfWeek',
             ExpressionAttributeNames: {
                 '#date': 'date',
@@ -403,7 +404,7 @@ const getUserStepsStats = async (event) => {
 
         // Get all steps for the user
         const params = {
-            TableName: 'Steps',
+            TableName: TABLE_NAME,
             KeyConditionExpression: 'username = :username',
             ExpressionAttributeValues: {
                 ':username': username

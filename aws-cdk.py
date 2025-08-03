@@ -134,6 +134,10 @@ class AphWellnessClubStack(Stack):
         weights_table.grant_read_write_data(api_handler)
         steps_table.grant_read_write_data(steps_api_handler)
         steps_photo_bucket.grant_read_write(steps_api_handler)
+
+        # Add to Environment:
+        steps_api_handler.add_environment("STEPS_TABLE", steps_table.table_name)
+        steps_api_handler.add_environment("WEIGHTS_TABLE", weights_table.table_name)
         
         # Create API Gateway
         api = apigateway.RestApi(
