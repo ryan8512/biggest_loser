@@ -178,7 +178,7 @@ class AphWellnessClubStack(Stack):
             self, "ApiCustomDomain",
             domain_name=api_link,
             certificate=acm.Certificate.from_certificate_arn(
-                self, "ExistingCertificate",
+                self, "ApiCertificate",
                 certificate_arn=certificate_arn
             )
         )
@@ -214,7 +214,7 @@ class AphWellnessClubStack(Stack):
             ),
             domain_names=[domain_name],
             certificate=acm.Certificate.from_certificate_arn(
-                self, "ExistingCertificate",
+                self, "CloudFrontCertificate",
                 certificate_arn=certificate_arn
             ),
             comment=f"Distribution for {domain_name}",
