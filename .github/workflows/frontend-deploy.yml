@@ -29,7 +29,8 @@ jobs:
         id: get-params
         run: |
           S3_BUCKET=$(aws ssm get-parameter --name "/my-app/s3-bucket" --query "Parameter.Value" --output text)
-          API_URL=$(aws ssm get-parameter --name "/my-app/api-url" --query "Parameter.Value" --output text)
+          RAW_API_URL=$(aws ssm get-parameter --name "/my-app/api-url" --query "Parameter.Value" --output text)
+          API_URL="https://${RAW_API_URL}"
           echo "S3_BUCKET=$S3_BUCKET" >> $GITHUB_ENV
           echo "API_URL=$API_URL" >> $GITHUB_ENV
 
