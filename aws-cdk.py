@@ -275,7 +275,7 @@ class AphWellnessClubStack(Stack):
         CfnOutput(self, "BucketName", value=website_bucket.bucket_name)
         CfnOutput(self, "DistributionDomainName", value=distribution.distribution_domain_name)
         CfnOutput(self, "DistributionId", value=distribution.distribution_id)
-        CfnOutput(self, "ApiEndpoint", value=f"{api.url}{stage.value_as_string}/")
+        CfnOutput(self, "ApiEndpoint", value=api_link)
         CfnOutput(self, "WeightsTableName", value=weights_table.table_name)
         CfnOutput(self, "StepsTableName", value=steps_table.table_name)
         CfnOutput(self, "StepsPhotoBucketName", value=steps_photo_bucket.bucket_name)

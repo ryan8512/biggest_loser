@@ -25,8 +25,16 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
 
+      - name: Get S3 bucket and API URL from SSM
+        id: get-params
+        run: |
+          S3_BUCKET=$(aws ssm get-parameter --name "/my-app/s3-bucket" --query "Parameter.Value" --output text)
+          API_URL=$(aws ssm get-parameter --name "/my-app/api-url" --query "Parameter.Value" --output text)
+          echo "S3_BUCKET=$S3_BUCKET" >> $GITHUB_ENV
+          echo "API_URL=$API_URL" >> $GITHUB_ENV
+
       - name: Sync multiple folders to S3
         run: |
-          aws s3 sync ./front_end s3://aphwellnessclub.stashbysam.com/front_end/ --delete
-          aws s3 sync ./front_end_steps s3://aphwellnessclub.stashbysam.com/front_end_steps/ --delete
-          aws s3 cp ./index.html s3://aphwellnessclub.stashbysam.com/index.html
+          aws s3 sync ./front_end s3://$S3_BUCKET/front_end/ --delete 
+          aws s3 sync ./front_end_steps s3://$S3_BUCKET/front_end_steps/ --delete
+          aws s3 cp ./index.html s3://$S3_BUCKET/index.html
