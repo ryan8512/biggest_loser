@@ -7,6 +7,7 @@ on:
       - ".github/workflows/backend-deploy.yml"
       - "aws-cdk.py"
       - "requirements.txt"
+      - "deploy-config.json"
     branches:
       - main
 
