@@ -43,6 +43,7 @@ class AphWellnessClubStack(Stack):
         # Extract subdomain and create naming prefix
         domain_prefix = domain_name.split('.')[0]  # trial1234
         parent_domain = domain_name.replace(domain_prefix + '.', '')
+        api_link = domain_prefix+'-api.'+parent_domain
         
         # Resource naming variables
         website_bucket_name = domain_name
@@ -137,7 +138,7 @@ class AphWellnessClubStack(Stack):
 
         # Add to Environment:
         steps_api_handler.add_environment("STEPS_TABLE", steps_table.table_name)
-        steps_api_handler.add_environment("WEIGHTS_TABLE", weights_table.table_name)
+        api_handler.add_environment("WEIGHTS_TABLE", weights_table.table_name)
         
         # Create API Gateway
         api = apigateway.RestApi(
@@ -172,6 +173,22 @@ class AphWellnessClubStack(Stack):
         api.root.add_resource("weekly_steps_leaderboard").add_method("GET", steps_api_handler_integration)
         user_steps_stats = api.root.add_resource("user_steps_stats")
         user_steps_stats.add_resource("{username}").add_method("GET", steps_api_handler_integration)
+        
+        api_domain = apigateway.DomainName(
+            self, "ApiCustomDomain",
+            domain_name=api_link,
+            certificate=acm.Certificate.from_certificate_arn(
+                self, "ExistingCertificate",
+                certificate_arn=certificate_arn
+            )
+        )
+        
+        apigateway.BasePathMapping(
+            self, "ApiBasePathMapping",
+            domain_name=api_domain,
+            rest_api=api,
+            base_path="", #CDK already wires stage so no need to declare it
+        )
         
         # Create Origin Access Control
         origin_access_control = cloudfront.CfnOriginAccessControl(
@@ -242,6 +259,16 @@ class AphWellnessClubStack(Stack):
                 targets.CloudFrontTarget(distribution)
             ),
             record_name=domain_name
+        )
+        
+        # API Gateway record for backend
+        route53.ARecord(
+            self, "ApiAliasRecord",
+            zone=hosted_zone,
+            record_name=api_link,
+            target=route53.RecordTarget.from_alias(
+                targets.ApiGatewayDomain(api_domain)
+            )
         )
         
         # Outputs
