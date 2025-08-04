@@ -38,7 +38,7 @@ class AphWellnessClubStack(Stack):
         )
 
         # Domain configuration
-        domain_name = "trial4321.stashbysam.com"
+        domain_name = "trial54321.stashbysam.com"
         
         # Extract subdomain and create naming prefix
         domain_prefix = domain_name.split('.')[0]  # trial1234
@@ -263,7 +263,7 @@ if not account or not region:
     raise ValueError("CDK_DEFAULT_ACCOUNT and CDK_DEFAULT_REGION must be set")
 
 app = cdk.App()
-AphWellnessClubStack(app, "trialStack", 
+AphWellnessClubStack(app, "trial2Stack", 
     env=Environment(
         account=account,
         region=region
