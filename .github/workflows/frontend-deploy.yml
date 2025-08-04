@@ -33,6 +33,20 @@ jobs:
           echo "S3_BUCKET=$S3_BUCKET" >> $GITHUB_ENV
           echo "API_URL=$API_URL" >> $GITHUB_ENV
 
+      - name: Replace API URL in front_end files
+        run: |
+          find ./front_end -type f -name '*.js' -exec sed -i "s|__API_BASE_URL__|${API_URL}|g" {} +
+          find ./front_end_steps -type f -name '*.js' -exec sed -i "s|__API_BASE_URL__|${API_URL}|g" {} +
+
+      - name: Confirm replacement worked
+        run: |
+          if grep -r "__API_BASE_URL__" ./front_end || grep -r "__API_BASE_URL__" ./front_end_steps; then
+            echo "Some files still contain the placeholder. Aborting."
+            exit 1
+          else
+            echo "All API placeholders replaced successfully."
+          fi
+
       - name: Sync multiple folders to S3
         run: |
           aws s3 sync ./front_end s3://$S3_BUCKET/front_end/ --delete 

@@ -1,7 +1,7 @@
 let username = "";
 let debug_setting = 0;
 
-const apiBaseUrl = "https://r58t6xl40g.execute-api.us-east-1.amazonaws.com/Prod";
+const apiBaseUrl = "__API_BASE_URL__";
 
 document.addEventListener('DOMContentLoaded', function() {
     const form = document.getElementById('usernameForm');
