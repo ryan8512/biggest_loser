@@ -51,10 +51,14 @@ jobs:
       - name: Deploy CDK stack
         run: cdk deploy --app "python aws-cdk.py" --require-approval never
 
+      - name: Read deploy-config.json
+        id: read-config
+        run: |
+          STACK_NAME=$(jq -r '.stackName' deploy-config.json)
+          echo "STACK_NAME=$STACK_NAME" >> $GITHUB_ENV
+
       - name: Extract CDK outputs and store in SSM
         run: |
-          STACK_NAME="trial2Stack" 
-
           BUCKET_NAME=$(aws cloudformation describe-stacks \
             --stack-name "$STACK_NAME" \
             --query "Stacks[0].Outputs[?OutputKey=='BucketName'].OutputValue" \
@@ -68,5 +72,14 @@ jobs:
           echo "BucketName: $BUCKET_NAME"
           echo "ApiEndpoint: $API_ENDPOINT"
 
-          aws ssm put-parameter --name "/my-app/s3-bucket" --value "$BUCKET_NAME" --type "String" --overwrite
-          aws ssm put-parameter --name "/my-app/api-url" --value "$API_ENDPOINT" --type "String" --overwrite
+          aws ssm put-parameter \
+            --name "/$STACK_NAME/s3-bucket" \
+            --value "$BUCKET_NAME" \
+            --type "String" \
+            --overwrite
+
+          aws ssm put-parameter \
+            --name "/$STACK_NAME/api-url" \
+            --value "$API_ENDPOINT" \
+            --type "String" \
+            --overwrite

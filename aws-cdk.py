@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import os
 import aws_cdk as cdk
+import json
 from aws_cdk import (
     Stack,
     aws_s3 as s3,
@@ -21,7 +22,7 @@ from aws_cdk import (
 from constructs import Construct
 
 class AphWellnessClubStack(Stack):
-    def __init__(self, scope: Construct, construct_id: str, **kwargs) -> None:
+    def __init__(self, scope: Construct, construct_id: str, domain_name: str, **kwargs) -> None:
         super().__init__(scope, construct_id, **kwargs)
 
         # ========================================
@@ -36,9 +37,6 @@ class AphWellnessClubStack(Stack):
             allowed_values=["dev", "prod"],
             description="Deployment stage (dev or prod)"
         )
-
-        # Domain configuration
-        domain_name = "trial54321.stashbysam.com"
         
         # Extract subdomain and create naming prefix
         domain_prefix = domain_name.split('.')[0]  # trial1234
@@ -281,16 +279,22 @@ class AphWellnessClubStack(Stack):
         CfnOutput(self, "StepsPhotoBucketName", value=steps_photo_bucket.bucket_name)
         CfnOutput(self, "DeploymentStage", value=stage.value_as_string)
 
+with open("deploy-config.json") as f:
+    config = json.load(f)
+
 # Get AWS account and region from environment variables
 account = os.getenv("CDK_DEFAULT_ACCOUNT")
 region = os.getenv("CDK_DEFAULT_REGION")
+stack_name = config["stackName"]
+domain_name = config["domainName"]
 
 # Fallback check (optional)
 if not account or not region:
     raise ValueError("CDK_DEFAULT_ACCOUNT and CDK_DEFAULT_REGION must be set")
 
 app = cdk.App()
-AphWellnessClubStack(app, "trial2Stack", 
+AphWellnessClubStack(app, stack_name, 
+    domain_name = domain_name,
     env=Environment(
         account=account,
         region=region
