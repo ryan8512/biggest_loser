@@ -40,6 +40,9 @@ jobs:
         working-directory: back_end
         run: npm install
 
+      - name: Upgrade pip
+        run: python -m pip install --upgrade pip
+
       - name: Install Python dependencies for CDK
         run: pip install -r requirements.txt
 
