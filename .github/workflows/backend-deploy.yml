@@ -5,6 +5,8 @@ on:
     paths:
       - "back_end/**"
       - ".github/workflows/backend-deploy.yml"
+      - "aws-cdk.py"
+      - "requirements.txt"
     branches:
       - main
 
