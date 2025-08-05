@@ -16,7 +16,8 @@ document.addEventListener('DOMContentLoaded', function() {
             const weekOffset = this.id.split('-')[0] === 'current' ? 0 : 
                              this.id.split('-')[0] === 'last' ? 1 :
                              this.id.split('-')[0] === 'two' ? 2 :
-                             this.id.split('-')[0] === 'three' ? 3 : 4;
+                             this.id.split('-')[0] === 'three' ? 3 :
+                             this.id.split('-')[0] === 'four' ? 4 : 5;
             
             // Remove active class from all tabs and panes
             document.querySelectorAll('#weeklyTabs button').forEach(btn => btn.classList.remove('active'));
@@ -84,7 +85,8 @@ document.addEventListener('DOMContentLoaded', function() {
             const tabId = weekOffset === 0 ? 'current-week' : 
                           weekOffset === 1 ? 'last-week' : 
                           weekOffset === 2 ? 'two-weeks' : 
-                         weekOffset === 3 ? 'three-weeks' : 'four-weeks';
+                          weekOffset === 3 ? 'three-weeks' : 
+                         weekOffset === 4 ? 'four-weeks' : 'five-weeks';
             await showLeaderboard(null, endpoint, tabId);
         } catch (error) {
             console.error('Error fetching weekly leaderboard:', error);
