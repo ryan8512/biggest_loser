@@ -131,7 +131,7 @@ const loginSteps = async (event) => {
         "feetpokiko", "kierc", "elvin6969", "edgar", "inchieinch", "mark", "jdcastro", 
         "jan", "atrin", "jbuslig", "alucido", "caryllll", "m3ow", "yugi14", "divine", "capumali17", 
         "gryan", "riev", "ryan8512","lawrence","mjadonis27", "vintousan", "demi1111", "sashimimojo","krn",
-        "rumali","androidiee","erika","fibi", "luozheng26", "giosantos10", "elroycabalda"
+        "rumali","androidiee","erika","fibi", "luozheng26", "giosantos10", "elroycabalda", "garqueso3"
     ];
     
     if (!validUsernames.includes(username)) {
@@ -290,7 +290,8 @@ const leaderboard_step_logic = (userData, overall) => {
         "fibi": "Phoebe",
         "luozheng26": "Gabe",
         "giosantos10": "Gio",
-        "elroycabalda": "Elroy"
+        "elroycabalda": "Elroy",
+        "garqueso3": "Anton"
     };
     
 
