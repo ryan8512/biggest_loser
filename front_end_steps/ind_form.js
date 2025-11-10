@@ -60,6 +60,7 @@ async function showUserStat(event, fetch_path, token) {
 
         if(response.ok){
             const data = await response.json();
+            const entryDates = data.entry_dates || [];
 
             // Render calendar
             renderCalendar(userStatContainer, entryDates);
