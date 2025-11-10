@@ -351,7 +351,7 @@ document.querySelectorAll('#monthlyTabs button').forEach(button => {
         
         // Call main function with offset
         const token = localStorage.getItem('authToken');
-        const username = JSON.parse(atob(tokenFromStorage.split('.')[1])).username;
+        const username = JSON.parse(atob(token.split('.')[1])).username;
 
         await showUserStat(null, `${apiBaseUrl}/user_steps_stats/${username}?month_offset=${monthOffset}`, token, monthOffset);
     });
