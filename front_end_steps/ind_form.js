@@ -74,10 +74,11 @@ async function showUserStat(event, fetch_path, token) {
 }
 
 // === Calendar Renderer ===
-function renderCalendar(container, entryDates) {
+function renderCalendar(container, entryDates, monthOffset = 0) {
     const today = new Date();
-    const year = today.getFullYear();
-    const month = today.getMonth();
+    const targetDate = new Date(today.getFullYear(), today.getMonth() + monthOffset, 1);
+    const year = targetDate.getFullYear();
+    const month = targetDate.getMonth();
 
     // Get first and last day of this month
     const firstDay = new Date(year, month, 1);
@@ -89,7 +90,7 @@ function renderCalendar(container, entryDates) {
     // Start rendering
     let calendarHTML = `
         <div class="calendar">
-            <h3 class="header-font">${today.toLocaleString('default', { month: 'long' })} ${year}</h3>
+            <h3 class="header-font">${targetDate.toLocaleString('default', { month: 'long' })} ${year}</h3>
             <div class="calendar-grid">
                 <div class="calendar-day header">Sun</div>
                 <div class="calendar-day header">Mon</div>
@@ -325,5 +326,52 @@ async function submitPhotoProof(file) {
     } catch (error) {
         console.error('Error:', error);
         document.getElementById('photo_message').textContent = 'An error occurred while uploading the photo';
+    }
+}
+
+document.querySelectorAll('#monthlyTabs button').forEach(button => {
+    button.addEventListener('click', function() {
+        const monthOffset = this.id.split('-')[0] === 'current' ? 0 : 
+                            this.id.split('-')[0] === 'last' ? -1 : -2;
+        
+        // Remove active class from all tabs and panes
+        document.querySelectorAll('#monthlyTabs button').forEach(btn => btn.classList.remove('active'));
+        document.querySelectorAll('#monthlyTabContent .tab-pane').forEach(pane => {
+            pane.classList.remove('show', 'active');
+        });
+        
+        // Add active class to clicked tab and its pane
+        this.classList.add('active');
+        const targetPane = document.querySelector(this.getAttribute('data-bs-target'));
+        targetPane.classList.add('show', 'active');
+        
+        updateCalender(targetPane, monthOffset);
+    });
+});
+
+async function updateCalender(container, monthOffset) {
+    try {
+        const endpoint = `/user_steps_stats?month_offset=${monthOffset}`;
+        const response = await fetch(apiBaseUrl + endpoint, {
+            method: 'GET', 
+            mode: 'cors', 
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        }); 
+        
+        if (!response.ok) {
+            container.innerHTML = 'Error fetching data';
+            return;
+        }
+
+        const data = await response.json();
+        const entryDates = data.entry_dates || [];
+
+        // Render calendar for the specified month offset
+        renderCalendar(container, entryDates, monthOffset);
+    } catch (error) {
+        console.error('Error fetching monthly leaderboard:', error);
+        container.innerHTML = 'Error fetching data';
     }
 }
