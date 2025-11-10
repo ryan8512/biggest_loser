@@ -120,7 +120,7 @@ document.getElementById('daily-steps-entry').addEventListener('submit', function
     const todayDate = dayDates.dataset.todayDate;
     const steps = document.getElementById('daily_steps_input').value;
 
-    if (!date || !steps) {
+    if (!todayDate || !steps) {
         document.getElementById('daily_message').textContent = 'Please fill in all fields';
         return;
     }
