@@ -56,32 +56,68 @@ async function showUserStat(event, fetch_path, token) {
             mode: 'cors'
         });
 
+        const userStatContainer = document.getElementById("user-stat");
+
         if(response.ok){
             const data = await response.json();
-            const userStatContainer = document.getElementById("user-stat");
 
-            // Create stats cards
-            userStatContainer.innerHTML = `
-                <div class="stats-card mb-3">
-                    <h6 class="body-font">Total Steps</h6>
-                    <h4 class="header-font">${data.total_steps.toLocaleString()}</h4>
-                </div>
-                <div class="stats-card mb-3">
-                    <h6 class="body-font">Weekly Steps</h6>
-                    <h4 class="header-font">${data.weekly_steps.toLocaleString()}</h4>
-                </div>
-                <div class="stats-card">
-                    <h6 class="body-font">Daily Average</h6>
-                    <h4 class="header-font">${data.daily_average.toLocaleString()}</h4>
-                </div>
-            `;
+            // Render calendar
+            renderCalendar(userStatContainer, entryDates);
         } else {
-            document.getElementById("user-stat").innerHTML = 'Error fetching data';
+            userStatContainer.innerHTML = 'Error fetching data';
         }
     } catch (error) {
         console.error('Fetch error:', error);
         document.getElementById("user-stat").innerHTML = 'Fetch error occurred';
     }
+}
+
+// === Calendar Renderer ===
+function renderCalendar(container, entryDates) {
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = today.getMonth();
+
+    // Get first and last day of this month
+    const firstDay = new Date(year, month, 1);
+    const lastDay = new Date(year, month + 1, 0);
+
+    // For easier comparison
+    const entrySet = new Set(entryDates);
+
+    // Start rendering
+    let calendarHTML = `
+        <div class="calendar">
+            <h3 class="header-font">${today.toLocaleString('default', { month: 'long' })} ${year}</h3>
+            <div class="calendar-grid">
+                <div class="calendar-day header">Sun</div>
+                <div class="calendar-day header">Mon</div>
+                <div class="calendar-day header">Tue</div>
+                <div class="calendar-day header">Wed</div>
+                <div class="calendar-day header">Thu</div>
+                <div class="calendar-day header">Fri</div>
+                <div class="calendar-day header">Sat</div>
+    `;
+
+    // Add empty cells before first day
+    for (let i = 0; i < firstDay.getDay(); i++) {
+        calendarHTML += `<div class="calendar-day empty"></div>`;
+    }
+
+    // Fill days of the month
+    for (let day = 1; day <= lastDay.getDate(); day++) {
+        const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+
+        const hasEntry = entrySet.has(dateStr);
+        calendarHTML += `
+            <div class="calendar-day ${hasEntry ? 'has-entry' : ''}">
+                ${day}
+            </div>
+        `;
+    }
+
+    calendarHTML += `</div></div>`;
+    container.innerHTML = calendarHTML;
 }
 
 // Daily Steps Form Handler

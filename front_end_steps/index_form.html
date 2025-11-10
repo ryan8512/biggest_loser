@@ -104,6 +104,38 @@
         background-color: #e6ffe6;
         color: #008000;
       }
+      .calendar {
+        width: 100%;
+        text-align: center;
+      }
+
+      .calendar-grid {
+        display: grid;
+        grid-template-columns: repeat(7, 1fr);
+        gap: 4px;
+      }
+
+      .calendar-day {
+        padding: 10px;
+        border-radius: 6px;
+        background-color: #f7f7f7;
+        font-size: 14px;
+      }
+
+      .calendar-day.header {
+        font-weight: bold;
+        background-color: #e0e0e0;
+      }
+
+      .calendar-day.has-entry {
+        background-color: #4caf50;
+        color: white;
+        font-weight: bold;
+      }
+
+      .calendar-day.empty {
+        background: transparent;
+      }
     </style>
 
     <!-- Background image -->
