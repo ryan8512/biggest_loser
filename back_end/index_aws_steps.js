@@ -406,6 +406,9 @@ const getUserStepsStats = async (event) => {
     try {
         const username = event.path.split('/').pop();
 
+        // Get week_offset from query parameters, default to 0 (current week)
+        const monthOffset = parseInt(event.queryStringParameters?.month_offset || '0');
+
         // Get all steps for the user
         const params = {
             TableName: TABLE_NAME,
@@ -418,11 +421,8 @@ const getUserStepsStats = async (event) => {
         const result = await dynamoDb.query(params).promise();
         const userData = result.Items;
 
-        // Calculate total steps
-        const total_steps = userData.reduce((sum, item) => sum + item.steps, 0);
-
         // Calculate weekly steps (current week)
-        const currentDate = moment();
+        const currentDate = moment().add(monthOffset, 'months');
         const startOfMonth = currentDate.clone().startOf('week').format('YYYY-MM-DD');
         const endOfMonth = currentDate.clone().endOf('week').format('YYYY-MM-DD');
 
