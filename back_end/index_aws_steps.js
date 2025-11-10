@@ -423,22 +423,22 @@ const getUserStepsStats = async (event) => {
 
         // Calculate weekly steps (current week)
         const currentDate = moment();
-        const startOfWeek = currentDate.clone().startOf('week').format('YYYY-MM-DD');
-        const endOfWeek = currentDate.clone().endOf('week').format('YYYY-MM-DD');
+        const startOfMonth = currentDate.clone().startOf('week').format('YYYY-MM-DD');
+        const endOfMonth = currentDate.clone().endOf('week').format('YYYY-MM-DD');
 
-        const weekly_steps = userData
-            .filter(item => item.date >= startOfWeek && item.date <= endOfWeek)
-            .reduce((sum, item) => sum + item.steps, 0);
 
-        // Calculate daily average (using all entries)
-        const daily_average = userData.length > 0 ? Math.round(total_steps / userData.length) : 0;
+        // Filter entries within this month
+        const thisMonthEntries = userData.filter(item => 
+            item.date >= startOfMonth && item.date <= endOfMonth
+        );
+
+        // Extract all dates (make unique if needed)
+        const entryDates = [...new Set(thisMonthEntries.map(item => item.date))];
 
         return {
             statusCode: 200,
             body: JSON.stringify({
-                total_steps,
-                weekly_steps,
-                daily_average
+                entry_dates: entryDates
             }),
         };
     } catch (error) {
