@@ -69,7 +69,7 @@ async function showUserStat(event, fetch_path, token, monthOffset = 0) {
         const entryDates = data.entry_dates || [];
 
         // Render calendar
-        renderCalendar(userStatContainer, entryDates, monthOffset);
+        renderCalendar(container, entryDates, monthOffset);
 
     } catch (error) {
         console.error('Error fetching user stats:', error);
