@@ -186,7 +186,7 @@ function updateDayDisplay(){
     document.getElementById('current_day_range').textContent = `${todayStr}`;
 
     const dayDates = document.querySelector('.day-dates');
-    dayDates.dataset.todayDate = dateToday.toISOString().split('T')[0];
+    dayDates.dataset.todayDate = dateToday.toLocaleDateString('en-CA');
 
     // Disable next week button if it would go into the future
     const today = new Date();
