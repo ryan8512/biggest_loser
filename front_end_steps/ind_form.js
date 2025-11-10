@@ -27,19 +27,6 @@ window.onload = async (event) => {
     
         // Call user stats with the username from token
         await showUserStat(event, `${apiBaseUrl}/user_steps_stats/${username}`, token);
-
-        // Set initial date values
-        const today = new Date();
-        document.getElementById('daily_date_input').value = today.toISOString().split('T')[0];
-        document.getElementById('daily_date_input').max = today.toISOString().split('T')[0];
-
-        // Set initial week value
-        const currentSunday = new Date(today);
-        while (currentSunday.getDay() !== 0) {
-            currentSunday.setDate(currentSunday.getDate() - 1);
-        }
-        document.getElementById('week_start_input').value = currentSunday.toISOString().split('T')[0];
-        updateWeekDisplay();
     } catch (err) {
         console.error('Error decoding token:', err);
     }
@@ -129,7 +116,8 @@ function renderCalendar(container, entryDates, monthOffset = 0) {
 // Daily Steps Form Handler
 document.getElementById('daily-steps-entry').addEventListener('submit', function(event) {
     event.preventDefault();
-    const date = document.getElementById('daily_date_input').value;
+    const dayDates = document.querySelector('day-dates');
+    const todayDate = dayDates.dataset.todayDate;
     const steps = document.getElementById('daily_steps_input').value;
 
     if (!date || !steps) {
@@ -138,14 +126,15 @@ document.getElementById('daily-steps-entry').addEventListener('submit', function
     }
 
     submitSteps({
-        date: date,
+        date: todayDate,
         steps: parseInt(steps),
         type: 'daily'
     });
 });
 
-// Week selection functionality
+// Week selection functionality - Global for now (not good practice I know)
 let currentWeekStart = new Date();
+let currentDayStart = new Date();
 
 // Initialize to current week's Sunday
 while (currentWeekStart.getDay() !== 0) {
@@ -173,7 +162,7 @@ function updateWeekDisplay() {
     // Update the display
     document.getElementById('current_week_range').textContent = `${startStr} - ${endStr}`;
     
-    // Store dates for form submission (store in the week-dates div instead)
+    // Store dates for form submission (store in the div instead)
     const weekDates = document.querySelector('.week-dates');
     weekDates.dataset.startDate = weekStart.toISOString().split('T')[0];
     weekDates.dataset.endDate = weekEnd.toISOString().split('T')[0];
@@ -183,6 +172,25 @@ function updateWeekDisplay() {
     const nextWeekStart = new Date(currentWeekStart);
     nextWeekStart.setDate(nextWeekStart.getDate() + 7);
     document.getElementById('next_week').disabled = nextWeekStart > today;
+}
+
+function updateDayDisplay(){
+    dateToday = new Date(currentDayStart)
+
+    const todayStr = dateToday.toLocaleDateString('en-US', {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric'
+    });
+
+    document.getElementById('current_day_range').textContent = `${todayStr}`;
+
+    const dayDates = document.querySelector('.day-dates');
+    dayDates.dataset.todayDate = dateToday.toISOString().split('T')[0];
+
+    // Disable next week button if it would go into the future
+    const today = new Date();
+    document.getElementById('next_day').disabled = currentDayStart.getDate() == today.getDate();
 }
 
 // Add event listeners for week navigation
@@ -202,9 +210,26 @@ document.getElementById('next_week').addEventListener('click', () => {
     }
 });
 
+document.getElementById('prev_day').addEventListener('click', () => {
+    currentDayStart.setDate(currentDayStart.getDate() - 1);
+    updateDayDisplay();
+});
+
+document.getElementById('next_day').addEventListener('click', () => {
+    const nextDay = new Date(currentDayStart);
+    nextDay.setDate(nextDay.getDate() + 1);
+    
+    // Don't allow selecting future weeks
+    if (nextDay <= new Date()) {
+        currentDayStart = nextDay;
+        updateDayDisplay();
+    }
+});
+
 // Initialize week display on page load
 document.addEventListener('DOMContentLoaded', () => {
     updateWeekDisplay();
+    updateDayDisplay();
 });
 
 // Update the weekly steps form submission to use the selected week

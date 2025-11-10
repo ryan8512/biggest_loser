@@ -218,9 +218,21 @@
             </div>
             <div class="mask mask-shadow" style="background-color: rgb(192, 208, 213); padding: 20px;">
               <form id="daily-steps-entry" class="form-section">
-                <div class="input-group">
-                  <label class="body-font" for="daily_date_input">Date:</label>
-                  <input type="date" id="daily_date_input" class="form-control body-font">
+                <div class="input-group mb-3">
+                  <div class="d-flex align-items-center gap-2 w-100">
+                    <button type="button" class="btn btn-secondary body-font" id="prev_day" 
+                            style="flex: 0 0 auto; width: 40px;">
+                      ←
+                    </button>
+                    <div class="day-dates w-100 text-center body-font" 
+                         style="background-color: #fff; padding: 8px; border-radius: 4px;">
+                      <span id="current_day_range">Week Range</span>
+                    </div>
+                    <button type="button" class="btn btn-secondary body-font" id="next_day" 
+                            style="flex: 0 0 auto; width: 40px;">
+                      →
+                    </button>
+                  </div>
                 </div>
                 <div class="input-group">
                   <label class="body-font" for="daily_steps_input">Steps:</label>
