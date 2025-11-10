@@ -45,8 +45,12 @@ window.onload = async (event) => {
     }
 };
 
-async function showUserStat(event, fetch_path, token) {
+async function showUserStat(event, fetch_path, token, monthOffset = 0) {
+    // Determine target container by offset
+    const targetId = monthOffset === 0 ? 'current-month' : monthOffset === -1 ? 'last-month' : 'two-month';
     try {
+        const container = document.getElementById(targetId);
+
         const response = await fetch(fetch_path, {
             method: 'GET',
             headers: {
@@ -56,20 +60,20 @@ async function showUserStat(event, fetch_path, token) {
             mode: 'cors'
         });
 
-        const userStatContainer = document.getElementById('current-month');
-
-        if(response.ok){
-            const data = await response.json();
-            const entryDates = data.entry_dates || [];
-
-            // Render calendar
-            renderCalendar(userStatContainer, entryDates);
-        } else {
-            userStatContainer.innerHTML = 'Error fetching data';
+        if (!response.ok) {
+            container.innerHTML = 'Error fetching data';
+            return;
         }
+
+        const data = await response.json();
+        const entryDates = data.entry_dates || [];
+
+        // Render calendar
+        renderCalendar(userStatContainer, entryDates, monthOffset);
+
     } catch (error) {
-        console.error('Fetch error:', error);
-        document.getElementById('current-month').innerHTML = 'Fetch error occurred';
+        console.error('Error fetching user stats:', error);
+        document.getElementById(targetId).innerHTML = 'Error fetching data';
     }
 }
 
@@ -330,7 +334,7 @@ async function submitPhotoProof(file) {
 }
 
 document.querySelectorAll('#monthlyTabs button').forEach(button => {
-    button.addEventListener('click', function() {
+    button.addEventListener('click', async function() {
         const monthOffset = this.id.split('-')[0] === 'current' ? 0 : 
                             this.id.split('-')[0] === 'last' ? -1 : -2;
         
@@ -345,36 +349,10 @@ document.querySelectorAll('#monthlyTabs button').forEach(button => {
         const targetPane = document.querySelector(this.getAttribute('data-bs-target'));
         targetPane.classList.add('show', 'active');
         
-        updateCalender(monthOffset);
+        // Call main function with offset
+        const token = localStorage.getItem('authToken');
+        const username = JSON.parse(atob(tokenFromStorage.split('.')[1])).username;
+
+        await showUserStat(null, `${apiBaseUrl}/user_steps_stats/${username}?month_offset=${monthOffset}`, token, monthOffset);
     });
 });
-
-async function updateCalender(monthOffset) {
-    try {
-        const endpoint = `/user_steps_stats?month_offset=${monthOffset}`;
-        const targetId = monthOffset === 0 ? 'current-month' : 
-                         monthOffset === 1 ? 'last-month' : 'two-month';
-        const container = document.getElementById(targetId);
-        const response = await fetch(apiBaseUrl + endpoint, {
-            method: 'GET', 
-            mode: 'cors', 
-            headers: {
-                'Content-Type': 'application/json'
-            }
-        }); 
-        
-        if (!response.ok) {
-            container.innerHTML = 'Error fetching data';
-            return;
-        }
-
-        const data = await response.json();
-        const entryDates = data.entry_dates || [];
-
-        // Render calendar for the specified month offset
-        renderCalendar(container, entryDates, monthOffset);
-    } catch (error) {
-        console.error('Error fetching monthly leaderboard:', error);
-        container.innerHTML = 'Error fetching data';
-    }
-}
