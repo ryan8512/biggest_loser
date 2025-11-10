@@ -433,7 +433,26 @@ const getUserStepsStats = async (event) => {
         );
 
         // Extract all dates (make unique if needed)
-        const entryDates = [...new Set(thisMonthEntries.map(item => item.date))];
+        //const entryDates = [...new Set(thisMonthEntries.map(item => item.date))];
+        const entryDates = [
+            ...new Set(
+                thisMonthEntries.flatMap(entry => {
+                const start = new Date(entry.date);
+                const end = entry.endDate ? new Date(entry.endDate) : start;
+
+                const datesInRange = [];
+                for (
+                    let d = new Date(start);
+                    d <= end;
+                    d.setDate(d.getDate() + 1)
+                ) {
+                    datesInRange.push(d.toISOString().split('T')[0]);
+                }
+
+                return datesInRange;
+                })
+            )
+        ];
 
         return {
             statusCode: 200,
