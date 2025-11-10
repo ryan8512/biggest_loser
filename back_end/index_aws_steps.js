@@ -421,10 +421,10 @@ const getUserStepsStats = async (event) => {
         const result = await dynamoDb.query(params).promise();
         const userData = result.Items;
 
-        // Calculate weekly steps (current week)
+        // Calculate months
         const currentDate = moment().add(monthOffset, 'months');
-        const startOfMonth = currentDate.clone().startOf('week').format('YYYY-MM-DD');
-        const endOfMonth = currentDate.clone().endOf('week').format('YYYY-MM-DD');
+        const startOfMonth = currentDate.clone().startOf('months').format('YYYY-MM-DD');
+        const endOfMonth = currentDate.clone().endOf('months').format('YYYY-MM-DD');
 
 
         // Filter entries within this month
