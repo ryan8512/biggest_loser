@@ -116,7 +116,7 @@ function renderCalendar(container, entryDates, monthOffset = 0) {
 // Daily Steps Form Handler
 document.getElementById('daily-steps-entry').addEventListener('submit', function(event) {
     event.preventDefault();
-    const dayDates = document.querySelector('day-dates');
+    const dayDates = document.querySelector('.day-dates');
     const todayDate = dayDates.dataset.todayDate;
     const steps = document.getElementById('daily_steps_input').value;
 
