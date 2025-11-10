@@ -56,7 +56,7 @@ async function showUserStat(event, fetch_path, token) {
             mode: 'cors'
         });
 
-        const userStatContainer = document.getElementById("user-stat");
+        const userStatContainer = document.getElementById('current-month');
 
         if(response.ok){
             const data = await response.json();
@@ -69,7 +69,7 @@ async function showUserStat(event, fetch_path, token) {
         }
     } catch (error) {
         console.error('Fetch error:', error);
-        document.getElementById("user-stat").innerHTML = 'Fetch error occurred';
+        document.getElementById('current-month').innerHTML = 'Fetch error occurred';
     }
 }
 
@@ -345,13 +345,16 @@ document.querySelectorAll('#monthlyTabs button').forEach(button => {
         const targetPane = document.querySelector(this.getAttribute('data-bs-target'));
         targetPane.classList.add('show', 'active');
         
-        updateCalender(targetPane, monthOffset);
+        updateCalender(monthOffset);
     });
 });
 
-async function updateCalender(container, monthOffset) {
+async function updateCalender(monthOffset) {
     try {
         const endpoint = `/user_steps_stats?month_offset=${monthOffset}`;
+        const tabId = monthOffset === 0 ? 'current-month' : 
+                         monthOffset === 1 ? 'last-month' : 'two-month';
+        const container = document.getElementById(targetId);
         const response = await fetch(apiBaseUrl + endpoint, {
             method: 'GET', 
             mode: 'cors', 
