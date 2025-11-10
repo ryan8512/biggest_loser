@@ -352,7 +352,7 @@ document.querySelectorAll('#monthlyTabs button').forEach(button => {
 async function updateCalender(monthOffset) {
     try {
         const endpoint = `/user_steps_stats?month_offset=${monthOffset}`;
-        const tabId = monthOffset === 0 ? 'current-month' : 
+        const targetId = monthOffset === 0 ? 'current-month' : 
                          monthOffset === 1 ? 'last-month' : 'two-month';
         const container = document.getElementById(targetId);
         const response = await fetch(apiBaseUrl + endpoint, {
